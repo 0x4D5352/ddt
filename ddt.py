@@ -66,36 +66,41 @@ def main() -> None:
             continue
         token_counts = num_tokens_from_string(text, GPT_4O)
         if filetype not in token_counter.file_categories:
-            token_counter.file_categories[filetype] = []
-            token_counter.category_totals[filetype] = 0
-        token_counter.file_categories[filetype].append((filename, token_counts))
-        token_counter.category_totals[filetype] += token_counts
-        token_counter.running_total += token_counts
+            token_counter.file_categories[filetype] = FileCategory(filetype)
+        token_counter.file_categories[filetype].files.append((filename, token_counts))
+        token_counter.file_categories[filetype].total += token_counts
+        token_counter.total += token_counts
 
     print("\nParsing complete!")
-    for filetype, count in token_counter.category_totals.items():
-        print_with_separator(f"{filetype} tokens:")
-        for file in token_counter.file_categories[filetype]:
+    for extension, filetype in token_counter.file_categories.items():
+        print_with_separator(f"{extension} tokens:")
+        for file in filetype.files:
             print(f"{file[0]}: {file[1]:,} tokens")
-        print(f"{filetype} total: {count:,} tokens")
+        print(f"{filetype.extension} total: {filetype.total:,} tokens")
 
-    print_with_separator(f"grand total: {token_counter.running_total:,}")
+    print_with_separator(f"grand total: {token_counter.total:,}")
     print(
-        f"remaining tokens given 128K context window: {128_000 - token_counter.running_total:,}"
+        f"remaining tokens given 128K context window: {128_000 - token_counter.total:,}"
     )
 
 
 """
-Data model
+Data models
 """
 
 
 class TokenCounter:
     def __init__(self, file_paths: list[Path]) -> None:
         self.file_paths: list[Path] = file_paths
-        self.file_categories: dict[str, list[tuple[str, int]]] = {}
-        self.category_totals: dict[str, int] = {}
-        self.running_total: int = 0
+        self.file_categories: dict[str, FileCategory] = {}
+        self.total: int = 0
+
+
+class FileCategory:
+    def __init__(self, extension: str) -> None:
+        self.extension: str = extension
+        self.files: list[tuple[str, int]] = []
+        self.total: int = 0
 
 
 """
@@ -138,6 +143,16 @@ def setup_argparse() -> argparse.ArgumentParser:
         action="store",
         help="save the results of the scan to a file. does not include stdout messages.",
         # choices=["json", "csv", "yaml", "html"],
+    )
+    parser.add_argument(
+        "--respect-gitignore",
+        action="store_true",
+        help="exclude files found in the .gitignore file",
+    )
+    parser.add_argument(
+        "--ignore-dotfiles",
+        action="store_true",
+        help="exclude files and directories beginning with a dot (.)",
     )
     file_types_group = parser.add_mutually_exclusive_group()
     file_types_group.add_argument(
