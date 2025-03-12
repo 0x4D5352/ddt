@@ -2,7 +2,7 @@ import argparse
 import tiktoken
 from pathlib import Path
 from math import ceil
-# import json
+import json
 # import csv
 # import yaml
 
@@ -42,9 +42,7 @@ def main() -> None:
 
     print_with_separator("Parsing directory...", after=False)
     files = list(root.glob("**/*.*"))
-    file_categories: dict[str, list[tuple[str, int]]] = {}
-    category_totals: dict[str, int] = {}
-    running_total = 0
+    token_counter = TokenCounter(files)
 
     print("Parsing files...\n")
     for file in files:
@@ -67,22 +65,42 @@ def main() -> None:
             print(f"file {file.name} hit unicode error, ignoring from now on")
             continue
         token_counts = num_tokens_from_string(text, GPT_4O)
-        if filetype not in file_categories:
-            file_categories[filetype] = []
-            category_totals[filetype] = 0
-        file_categories[filetype].append((filename, token_counts))
-        category_totals[filetype] += token_counts
-        running_total += token_counts
+        if filetype not in token_counter.file_categories:
+            token_counter.file_categories[filetype] = []
+            token_counter.category_totals[filetype] = 0
+        token_counter.file_categories[filetype].append((filename, token_counts))
+        token_counter.category_totals[filetype] += token_counts
+        token_counter.running_total += token_counts
 
     print("\nParsing complete!")
-    for filetype, count in category_totals.items():
+    for filetype, count in token_counter.category_totals.items():
         print_with_separator(f"{filetype} tokens:")
-        for file in file_categories[filetype]:
+        for file in token_counter.file_categories[filetype]:
             print(f"{file[0]}: {file[1]:,} tokens")
         print(f"{filetype} total: {count:,} tokens")
 
-    print_with_separator(f"grand total: {running_total:,}")
-    print(f"remaining tokens given 128K context window: {128_000 - running_total:,}")
+    print_with_separator(f"grand total: {token_counter.running_total:,}")
+    print(
+        f"remaining tokens given 128K context window: {128_000 - token_counter.running_total:,}"
+    )
+
+
+"""
+Data model
+"""
+
+
+class TokenCounter:
+    def __init__(self, file_paths: list[Path]) -> None:
+        self.file_paths: list[Path] = file_paths
+        self.file_categories: dict[str, list[tuple[str, int]]] = {}
+        self.category_totals: dict[str, int] = {}
+        self.running_total: int = 0
+
+
+"""
+CLI Arg Parser
+"""
 
 
 def setup_argparse() -> argparse.ArgumentParser:
@@ -188,7 +206,7 @@ Adapted from https://community.openai.com/t/how-do-i-calculate-image-tokens-in-g
 """
 
 
-def calculate_image_tokens(width: int, height: int):
+def calculate_image_tokens(width: int, height: int) -> int:
     # Step 1: scale to fit within a 2048 x 2048 square (maintain aspect ratio)
     if width > 2048 or height > 2048:
         aspect_ratio = width / height
@@ -213,6 +231,15 @@ def calculate_image_tokens(width: int, height: int):
     total_tokens = 85 + 170 * (tiles_width * tiles_height)
 
     return total_tokens
+
+
+"""
+Output methods
+"""
+
+
+def output_as_json() -> None:
+    pass
 
 
 if __name__ == "__main__":
