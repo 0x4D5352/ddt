@@ -257,7 +257,7 @@ Output methods
 
 def output_as_json(token_counter: TokenCounter, file_name: str) -> None:
     with open(file_name, "w") as file:
-        # TODO: make tokencounter serializable
+        # TODO: make tokencounter serializable: https://docs.python.org/3/library/json.html#encoders-and-decoders
         json.dump(token_counter, file)
 
 
