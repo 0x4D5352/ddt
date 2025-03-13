@@ -82,6 +82,8 @@ def main() -> None:
     print(
         f"remaining tokens given 128K context window: {128_000 - token_counter.total:,}"
     )
+    if args.output:
+        output_as_json(token_counter, args.output)
 
 
 """
@@ -253,8 +255,10 @@ Output methods
 """
 
 
-def output_as_json() -> None:
-    pass
+def output_as_json(token_counter: TokenCounter, file_name: str) -> None:
+    with open(file_name, "w") as file:
+        # TODO: make tokencounter serializable
+        json.dump(token_counter, file)
 
 
 if __name__ == "__main__":
