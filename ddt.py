@@ -1,8 +1,9 @@
 import argparse
 import tiktoken
+import json
 from pathlib import Path
 from math import ceil
-import json
+from typing import Any
 # import csv
 # import yaml
 
@@ -56,23 +57,26 @@ def main() -> None:
         if (filetype in excluded_filetypes or filetype not in included_filetypes) and (
             len(included_filetypes) > 0 or len(excluded_filetypes) > 0
         ):
+            # TODO: add to ignored_files
             continue
         print_if_verbose(f"reading {filename}", is_verbose)
+        # TODO: implement mimetypes for choosing tokenization method: https://docs.python.org/3/library/mimetypes.html
         try:
             text = file.read_text()
         except UnicodeDecodeError:
             excluded_filetypes.append(filetype)
+            # TODO: add to ignored_files
             print(f"file {file.name} hit unicode error, ignoring from now on")
             continue
         token_counts = num_tokens_from_string(text, GPT_4O)
-        if filetype not in token_counter.file_categories:
-            token_counter.file_categories[filetype] = FileCategory(filetype)
-        token_counter.file_categories[filetype].files.append((filename, token_counts))
-        token_counter.file_categories[filetype].total += token_counts
+        if filetype not in token_counter.scanned_files:
+            token_counter.scanned_files[filetype] = FileCategory(filetype)
+        token_counter.scanned_files[filetype].files.append((filename, token_counts))
+        token_counter.scanned_files[filetype].total += token_counts
         token_counter.total += token_counts
 
     print("\nParsing complete!")
-    for extension, filetype in token_counter.file_categories.items():
+    for extension, filetype in token_counter.scanned_files.items():
         print_with_separator(f"{extension} tokens:")
         for file in filetype.files:
             print(f"{file[0]}: {file[1]:,} tokens")
@@ -97,23 +101,47 @@ class TokenCounter:
 
     Attributes:
         root(Path): The root path of the directory.
-        file_paths(list[Path]): All file paths in the directory.
-        file_categories(dict[str, FileCategory]): A map of file-extensions to a FileCategory class containing files of that extension and their token counts.
+        all_files(list[Path]): All file paths in the directory.
+        ignored_files(dict[str, list[Path]]): All files ignored by the scan, grouped by extension.
+        scanned_files(dict[str, FileCategory]): All files scanned, grouped by extension.
         total(int): The total number of tokens present within the directory.
     """
 
-    def __init__(self, root: Path, file_paths: list[Path]) -> None:
+    def __init__(self, root: Path, all_files: list[Path]) -> None:
         self.root: Path = root
-        self.file_paths: list[Path] = file_paths
-        self.file_categories: dict[str, FileCategory] = {}
+        self.all_files: list[Path] = all_files
+        self.ignored_files: dict[str, list[Path]] = {}
+        self.scanned_files: dict[str, FileCategory] = {}
         self.total: int = 0
+
+    def to_dict(self):
+        return {
+            "root": str(self.root),
+            "all_files": [str(path) for path in self.all_files],
+            "ignored_files": {
+                key: [str(path) for path in paths] for key, paths in self.ignored_files
+            },
+            "scanned_files": {
+                ext: category.to_dict() for ext, category in self.scanned_files.items()
+            },
+            "total": self.total,
+        }
 
 
 class FileCategory:
     def __init__(self, extension: str) -> None:
+        # TODO: decide if you even need this or if it's duplicate info from scanned_files dict
         self.extension: str = extension
         self.files: list[tuple[str, int]] = []
         self.total: int = 0
+
+    def to_dict(self):
+        return {
+            "total": self.total,
+            "files": [
+                {"file": filename, "tokens": count} for filename, count in self.files
+            ],
+        }
 
 
 """
@@ -267,18 +295,19 @@ Output methods
 
 
 class TokenEncoder(json.JSONEncoder):
-    def default(self, o):
-        if isinstance(o, TokenCounter):
-            pass
-        if isinstance(o, FileCategory):
-            pass
+    def default(self, o: Any) -> Any:
+        if isinstance(o, TokenCounter) or isinstance(o, FileCategory):
+            return o.to_dict()
         return super().default(o)
+
+        # self.files: list[tuple[str, int]] = []
+        # self.total: int = 0
 
 
 def output_as_json(token_counter: TokenCounter, file_name: str) -> None:
     with open(file_name, "w") as file:
         # TODO: make tokencounter serializable: https://docs.python.org/3/library/json.html#encoders-and-decoders
-        json.dump(token_counter, file, cls=TokenEncoder)
+        json.dump(token_counter, file, cls=TokenEncoder, indent=2)
 
 
 if __name__ == "__main__":
