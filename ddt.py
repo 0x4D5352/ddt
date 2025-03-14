@@ -4,8 +4,6 @@ import json
 from pathlib import Path
 from math import ceil
 from typing import Any
-# import csv
-# import yaml
 
 GPT_4O = "gpt-4o"
 GPT_4O_MINI = "gpt-4o-mini"
@@ -13,83 +11,6 @@ GPT_4_TURBO = "gpt-4-turbo"
 GPT_4 = "gpt-4"
 
 MODEL_CHOICES = [GPT_4O, GPT_4O_MINI, GPT_4_TURBO, GPT_4]
-
-
-def main() -> None:
-    print("Hello from tokenizer!")
-    parser = setup_argparse()
-
-    args = parser.parse_args()
-    if len(args.directory) == 0:
-        print("ERROR: No Directory Provided")
-        exit(1)
-
-    is_verbose = args.verbose
-
-    if args.exclude is not None:
-        excluded_filetypes: list[str] = args.exclude
-    else:
-        excluded_filetypes: list[str] = []
-
-    if args.include is not None:
-        included_filetypes: list[str] = args.include
-    else:
-        included_filetypes: list[str] = []
-
-    root = Path(args.directory)
-    if not root.is_dir():
-        print("ERROR: Path Provided Is Not A Directory")
-        exit(1)
-
-    print_with_separator("Parsing directory...", after=False)
-    files = list(root.glob("**/*.*"))
-    token_counter = TokenCounter(root, files)
-
-    print("Parsing files...\n")
-    for file in files:
-        if file.is_dir():
-            continue
-        filename = file.name
-        filetype = file.suffix[1:]
-        if (filetype in excluded_filetypes or filetype not in included_filetypes) and (
-            len(included_filetypes) > 0 or len(excluded_filetypes) > 0
-        ):
-            if filetype not in token_counter.ignored_files:
-                token_counter.ignored_files[filetype] = []
-            token_counter.ignored_files[filetype].append(file)
-            # TODO: add to ignored_files
-            continue
-        print_if_verbose(f"reading {filename}", is_verbose)
-        # TODO: implement mimetypes for choosing tokenization method: https://docs.python.org/3/library/mimetypes.html
-        try:
-            text = file.read_text()
-        except UnicodeDecodeError:
-            # TODO: add to ignored_files
-            if filetype not in token_counter.ignored_files:
-                token_counter.ignored_files[filetype] = []
-            token_counter.ignored_files[filetype].append(file)
-            print(f"file {file.name} hit unicode error, ignoring from now on")
-            continue
-        token_counts = num_tokens_from_string(text, GPT_4O)
-        if filetype not in token_counter.scanned_files:
-            token_counter.scanned_files[filetype] = FileCategory(filetype)
-        token_counter.scanned_files[filetype].files.append((filename, token_counts))
-        token_counter.scanned_files[filetype].total += token_counts
-        token_counter.total += token_counts
-
-    print("\nParsing complete!")
-    for extension, filetype in token_counter.scanned_files.items():
-        print_with_separator(f"{extension} tokens:")
-        for file in filetype.files:
-            print(f"{file[0]}: {file[1]:,} tokens")
-        print(f"{filetype.extension} total: {filetype.total:,} tokens")
-
-    print_with_separator(f"grand total: {token_counter.total:,}")
-    print(
-        f"remaining tokens given 128K context window: {128_000 - token_counter.total:,}"
-    )
-    if args.output:
-        output_as_json(token_counter, args.output)
 
 
 """
@@ -118,10 +39,10 @@ class TokenCounter:
 
     def to_dict(self):
         return {
-            "root": str(self.root),
-            "all_files": [str(path) for path in self.all_files],
+            "root": self.root.name,
+            "all_files": [path.name for path in self.all_files],
             "ignored_files": {
-                key: [str(path) for path in paths]
+                key: [path.name for path in paths]
                 for key, paths in self.ignored_files.items()
             },
             "scanned_files": {
@@ -133,17 +54,14 @@ class TokenCounter:
 
 class FileCategory:
     def __init__(self, extension: str) -> None:
-        # TODO: decide if you even need this or if it's duplicate info from scanned_files dict
         self.extension: str = extension
-        self.files: list[tuple[str, int]] = []
+        self.files: list[dict[str, str | int]] = []
         self.total: int = 0
 
     def to_dict(self):
         return {
             "total": self.total,
-            "files": [
-                {"file": filename, "tokens": count} for filename, count in self.files
-            ],
+            "files": self.files,
         }
 
 
@@ -303,8 +221,89 @@ class TokenEncoder(json.JSONEncoder):
 
 def output_as_json(token_counter: TokenCounter, file_name: str) -> None:
     with open(file_name, "w") as file:
-        # TODO: make tokencounter serializable: https://docs.python.org/3/library/json.html#encoders-and-decoders
         json.dump(token_counter, file, cls=TokenEncoder, indent=2)
+
+
+"""
+Main function
+"""
+
+
+def main() -> None:
+    print("Hello from tokenizer!")
+    parser = setup_argparse()
+
+    args = parser.parse_args()
+    if len(args.directory) == 0:
+        print("ERROR: No Directory Provided")
+        exit(1)
+
+    is_verbose = args.verbose
+
+    if args.exclude is not None:
+        excluded_filetypes: list[str] = args.exclude
+    else:
+        excluded_filetypes: list[str] = []
+
+    if args.include is not None:
+        included_filetypes: list[str] = args.include
+    else:
+        included_filetypes: list[str] = []
+
+    root = Path(args.directory).resolve()
+    if not root.is_dir():
+        print("ERROR: Path Provided Is Not A Directory")
+        exit(1)
+
+    print_with_separator("Parsing directory...", after=False)
+    files = [file.resolve() for file in root.glob("**/*.*")]
+    token_counter = TokenCounter(root, files)
+
+    print("Parsing files...\n")
+    for file in files:
+        if file.is_dir():
+            continue
+        filename = file.name
+        filetype = file.suffix[1:]
+        if (filetype in excluded_filetypes or filetype not in included_filetypes) and (
+            len(included_filetypes) > 0 or len(excluded_filetypes) > 0
+        ):
+            if filetype not in token_counter.ignored_files:
+                token_counter.ignored_files[filetype] = []
+            token_counter.ignored_files[filetype].append(file)
+            continue
+        print_if_verbose(f"reading {filename}", is_verbose)
+        # TODO: implement mimetypes for choosing tokenization method: https://docs.python.org/3/library/mimetypes.html
+        try:
+            text = file.read_text()
+        except UnicodeDecodeError:
+            if filetype not in token_counter.ignored_files:
+                token_counter.ignored_files[filetype] = []
+            token_counter.ignored_files[filetype].append(file)
+            print(f"file {file.name} hit unicode error, ignoring from now on")
+            continue
+        token_counts = num_tokens_from_string(text, GPT_4O)
+        if filetype not in token_counter.scanned_files:
+            token_counter.scanned_files[filetype] = FileCategory(filetype)
+        token_counter.scanned_files[filetype].files.append(
+            {"file": filename, "tokens": token_counts}
+        )
+        token_counter.scanned_files[filetype].total += token_counts
+        token_counter.total += token_counts
+
+    print("\nParsing complete!")
+    for extension, filetype in token_counter.scanned_files.items():
+        print_with_separator(f"{extension} tokens:")
+        for file in filetype.files:
+            print(f"{file['file']}: {file['tokens']:,} tokens")
+        print(f"{filetype.extension} total: {filetype.total:,} tokens")
+
+    print_with_separator(f"grand total: {token_counter.total:,}")
+    print(
+        f"remaining tokens given 128K context window: {128_000 - token_counter.total:,}"
+    )
+    if args.output:
+        output_as_json(token_counter, args.output)
 
 
 if __name__ == "__main__":
