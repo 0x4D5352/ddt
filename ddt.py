@@ -47,9 +47,6 @@ def main() -> None:
 
     print("Parsing files...\n")
     for file in files:
-        if "old" in file.__str__() and args.exclude_old:
-            print(f"file {file.name} marked as old, skipping for now")
-            continue
         if file.is_dir():
             continue
         filename = file.name
@@ -57,6 +54,9 @@ def main() -> None:
         if (filetype in excluded_filetypes or filetype not in included_filetypes) and (
             len(included_filetypes) > 0 or len(excluded_filetypes) > 0
         ):
+            if filetype not in token_counter.ignored_files:
+                token_counter.ignored_files[filetype] = []
+            token_counter.ignored_files[filetype].append(file)
             # TODO: add to ignored_files
             continue
         print_if_verbose(f"reading {filename}", is_verbose)
@@ -64,8 +64,10 @@ def main() -> None:
         try:
             text = file.read_text()
         except UnicodeDecodeError:
-            excluded_filetypes.append(filetype)
             # TODO: add to ignored_files
+            if filetype not in token_counter.ignored_files:
+                token_counter.ignored_files[filetype] = []
+            token_counter.ignored_files[filetype].append(file)
             print(f"file {file.name} hit unicode error, ignoring from now on")
             continue
         token_counts = num_tokens_from_string(text, GPT_4O)
@@ -119,7 +121,8 @@ class TokenCounter:
             "root": str(self.root),
             "all_files": [str(path) for path in self.all_files],
             "ignored_files": {
-                key: [str(path) for path in paths] for key, paths in self.ignored_files
+                key: [str(path) for path in paths]
+                for key, paths in self.ignored_files.items()
             },
             "scanned_files": {
                 ext: category.to_dict() for ext, category in self.scanned_files.items()
@@ -155,6 +158,7 @@ def setup_argparse() -> argparse.ArgumentParser:
         description="Crawls a given directory, counts the number of tokens per filetype in the project and returns a per-type total and grand total",
         epilog="Made with <3 by 0x4D5352",
     )
+
     parser.add_argument(
         "directory",
         help="the relative or absolute path to the directory you wish to scan",
@@ -164,11 +168,6 @@ def setup_argparse() -> argparse.ArgumentParser:
         "--verbose",
         action="store_true",
         help="set to increase logging to console",
-    )
-    parser.add_argument(
-        "--exclude_old",
-        action="store_true",
-        help="ignore directories and files with 'old' in the name.",
     )
     parser.add_argument(
         "-m",
@@ -195,6 +194,7 @@ def setup_argparse() -> argparse.ArgumentParser:
         action="store_true",
         help="exclude files and directories beginning with a dot (.)",
     )
+
     file_types_group = parser.add_mutually_exclusive_group()
     file_types_group.add_argument(
         "-e",
@@ -299,9 +299,6 @@ class TokenEncoder(json.JSONEncoder):
         if isinstance(o, TokenCounter) or isinstance(o, FileCategory):
             return o.to_dict()
         return super().default(o)
-
-        # self.files: list[tuple[str, int]] = []
-        # self.total: int = 0
 
 
 def output_as_json(token_counter: TokenCounter, file_name: str) -> None:
