@@ -87,21 +87,7 @@ def setup_argparse() -> argparse.ArgumentParser:
         action="store_true",
         help="set to increase logging to console",
     )
-    parser.add_argument(
-        "-m",
-        "--model",
-        action="store",
-        help="specify a model to use for token approximation. default is 'gpt-4o'",
-        choices=MODEL_CHOICES,
-        default=GPT_4O,
-    )
-    parser.add_argument(
-        "-o",
-        "--output",
-        action="store",
-        help="save the results of the scan to a file. does not include stdout messages.",
-        # choices=["json", "csv", "yaml", "html"],
-    )
+
     parser.add_argument(
         "--respect-gitignore",
         action="store_true",
@@ -111,6 +97,22 @@ def setup_argparse() -> argparse.ArgumentParser:
         "--ignore-dotfiles",
         action="store_true",
         help="exclude files and directories beginning with a dot (.)",
+    )
+
+    parser.add_argument(
+        "-m",
+        "--model",
+        action="store",
+        help="specify a model to use for token approximation. default is 'gpt-4o'",
+        choices=MODEL_CHOICES,
+        default=GPT_4O,
+    )
+
+    parser.add_argument(
+        "-j",
+        "--json",
+        action="store",
+        help="save the results of the scan to a json file at the location specified. does not include stdout messages.",
     )
 
     file_types_group = parser.add_mutually_exclusive_group()
@@ -175,9 +177,7 @@ def num_tokens_from_string(string: str, model_name: str) -> int:
 
 
 # Source for image token code: https://medium.com/@teekaifeng/gpt4o-visual-tokenizer-an-illustration-c69695dd4a39
-"""
-Adapted from https://community.openai.com/t/how-do-i-calculate-image-tokens-in-gpt4-vision/492318/2 
-"""
+# Adapted from https://community.openai.com/t/how-do-i-calculate-image-tokens-in-gpt4-vision/492318/2
 
 
 def calculate_image_tokens(width: int, height: int) -> int:
