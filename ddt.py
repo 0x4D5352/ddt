@@ -42,7 +42,7 @@ def main() -> None:
 
     print_with_separator("Parsing directory...", after=False)
     files = list(root.glob("**/*.*"))
-    token_counter = TokenCounter(files)
+    token_counter = TokenCounter(root, files)
 
     print("Parsing files...\n")
     for file in files:
@@ -92,7 +92,18 @@ Data models
 
 
 class TokenCounter:
-    def __init__(self, file_paths: list[Path]) -> None:
+    """
+    A class representing the contents of a directory and the count of tokens per file in that directory.
+
+    Attributes:
+        root(Path): The root path of the directory.
+        file_paths(list[Path]): All file paths in the directory.
+        file_categories(dict[str, FileCategory]): A map of file-extensions to a FileCategory class containing files of that extension and their token counts.
+        total(int): The total number of tokens present within the directory.
+    """
+
+    def __init__(self, root: Path, file_paths: list[Path]) -> None:
+        self.root: Path = root
         self.file_paths: list[Path] = file_paths
         self.file_categories: dict[str, FileCategory] = {}
         self.total: int = 0
@@ -255,10 +266,19 @@ Output methods
 """
 
 
+class TokenEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, TokenCounter):
+            pass
+        if isinstance(o, FileCategory):
+            pass
+        return super().default(o)
+
+
 def output_as_json(token_counter: TokenCounter, file_name: str) -> None:
     with open(file_name, "w") as file:
         # TODO: make tokencounter serializable: https://docs.python.org/3/library/json.html#encoders-and-decoders
-        json.dump(token_counter, file)
+        json.dump(token_counter, file, cls=TokenEncoder)
 
 
 if __name__ == "__main__":
