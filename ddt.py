@@ -65,6 +65,13 @@ class FileCategory:
         }
 
 
+class GitIgnore:
+    def __init__(self, gitignore: Path) -> None:
+        with open(gitignore, "r") as file:
+            pass
+        pass
+
+
 """
 CLI Arg Parser
 """
@@ -177,7 +184,6 @@ def num_tokens_from_string(string: str, model_name: str) -> int:
 
 
 # Source for image token code: https://medium.com/@teekaifeng/gpt4o-visual-tokenizer-an-illustration-c69695dd4a39
-# Adapted from https://community.openai.com/t/how-do-i-calculate-image-tokens-in-gpt4-vision/492318/2
 
 
 def calculate_image_tokens(width: int, height: int) -> int:
@@ -265,9 +271,10 @@ def main() -> None:
             continue
         filename = file.name
         filetype = file.suffix[1:]
-        if (filetype in excluded_filetypes or filetype not in included_filetypes) and (
-            len(included_filetypes) > 0 or len(excluded_filetypes) > 0
-        ):
+        if (
+            (filetype in excluded_filetypes or filetype not in included_filetypes)
+            and (len(included_filetypes) > 0 or len(excluded_filetypes) > 0)
+        ) or (file.name[0] == "."):
             if filetype not in token_counter.ignored_files:
                 token_counter.ignored_files[filetype] = []
             token_counter.ignored_files[filetype].append(file)
