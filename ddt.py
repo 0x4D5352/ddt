@@ -228,17 +228,65 @@ Additional Helpers
 """
 
 
+# AI wrote this code.
 def parse_gitignore(root: Path) -> set[str]:
-    print("--------------------------")
-    print("gitignore!!!")
-    gitignore: set[str] = set()
-    with open(f"{str(root)}/.gitignore", "r") as file:
-        for line in file:
-            if line[0] == "#" or line == "\n":
-                continue
-    print(gitignore)
-    print("--------------------------")
-    return gitignore
+    """
+    Reads the .gitignore file in the given root directory, interprets its patterns,
+    and returns a set of Paths representing all files and directories within root that match
+    those patterns. Lines that are empty or start with '#' (comments) are ignored.
+
+    For pattern matching:
+      - Patterns that start with '/' are treated as relative to the root.
+      - Patterns that contain a slash (but do not start with '/') are also treated as relative.
+      - Patterns without any slash are searched recursively using rglob.
+      - If a pattern ends with '/', it is interpreted as a directory (the trailing slash is removed
+        before matching).
+
+    Args:
+        root (Path): The root directory containing the .gitignore file.
+
+    Returns:
+        Set[Path]: A set of Paths that match the patterns specified in the .gitignore file.
+    """
+    ignored = set()
+    gitignore_file = root / ".gitignore"
+
+    try:
+        with gitignore_file.open("r") as f:
+            patterns = []
+            for line in f:
+                stripped = line.strip()
+                # Skip empty lines or comments.
+                if not stripped or stripped.startswith("#"):
+                    continue
+                patterns.append(stripped)
+    except FileNotFoundError:
+        return ignored  # No .gitignore file found.
+
+    for pattern in patterns:
+        # Check if the pattern is meant for directories (ends with a slash)
+        if pattern.endswith("/"):
+            # Remove trailing slash for glob matching.
+            pattern = pattern.rstrip("/")
+
+        # If the pattern starts with '/', it is anchored to the root.
+        if pattern.startswith("/"):
+            # Remove the leading slash.
+            pattern = pattern[1:]
+            # Use glob relative to the root (non-recursive).
+            matches = root.glob(pattern)
+        # If the pattern contains a slash somewhere, treat it as relative to the root.
+        elif "/" in pattern:
+            matches = root.glob(pattern)
+        else:
+            # Pattern without a slash: search recursively.
+            matches = root.rglob(pattern)
+
+        for match in matches:
+            ignored.add(match)
+
+    print(ignored)
+    return ignored
 
 
 """
