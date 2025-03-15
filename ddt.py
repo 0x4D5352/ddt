@@ -39,7 +39,7 @@ class TokenCounter:
 
     def to_dict(self):
         return {
-            "root": self.root.name,
+            "root": str(self.root),
             "all_files": [path.name for path in self.all_files],
             "ignored_files": {
                 key: [path.name for path in paths]
@@ -63,13 +63,6 @@ class FileCategory:
             "total": self.total,
             "files": self.files,
         }
-
-
-class GitIgnore:
-    def __init__(self, gitignore: Path) -> None:
-        with open(gitignore, "r") as file:
-            pass
-        pass
 
 
 """
@@ -231,6 +224,24 @@ def output_as_json(token_counter: TokenCounter, file_name: str) -> None:
 
 
 """
+Additional Helpers
+"""
+
+
+def parse_gitignore(root: Path) -> set[str]:
+    print("--------------------------")
+    print("gitignore!!!")
+    gitignore: set[str] = set()
+    with open(f"{str(root)}/.gitignore", "r") as file:
+        for line in file:
+            if line[0] == "#" or line == "\n":
+                continue
+    print(gitignore)
+    print("--------------------------")
+    return gitignore
+
+
+"""
 Main function
 """
 
@@ -246,20 +257,29 @@ def main() -> None:
 
     is_verbose = args.verbose
 
-    if args.exclude is not None:
-        excluded_filetypes: list[str] = args.exclude
-    else:
-        excluded_filetypes: list[str] = []
-
-    if args.include is not None:
-        included_filetypes: list[str] = args.include
-    else:
-        included_filetypes: list[str] = []
-
     root = Path(args.directory).resolve()
     if not root.is_dir():
         print("ERROR: Path Provided Is Not A Directory")
         exit(1)
+
+    if args.exclude is not None:
+        excluded_files: list[Path] = [
+            file.resolve() for file in root.glob(f"**/*.{args.exclude}")
+        ]
+    else:
+        excluded_files: list[Path] = []
+
+    if args.include is not None:
+        included_files: list[Path] = [
+            file.resolve() for file in root.glob(f"**/*.{args.include}")
+        ]
+    else:
+        included_files: list[Path] = []
+
+    if args.respect_gitignore:
+        gitignore = parse_gitignore(root)
+    else:
+        gitignore = None
 
     print_with_separator("Parsing directory...", after=False)
     files = [file.resolve() for file in root.glob("**/*.*")]
@@ -272,9 +292,13 @@ def main() -> None:
         filename = file.name
         filetype = file.suffix[1:]
         if (
-            (filetype in excluded_filetypes or filetype not in included_filetypes)
-            and (len(included_filetypes) > 0 or len(excluded_filetypes) > 0)
-        ) or (file.name[0] == "."):
+            (
+                (file in excluded_files or file not in included_files)
+                and (len(included_files) > 0 or len(excluded_files) > 0)
+            )
+            or (file.name[0] == "." and args.ignore_dotfiles)
+            or (gitignore is not None and file in gitignore)
+        ):
             if filetype not in token_counter.ignored_files:
                 token_counter.ignored_files[filetype] = []
             token_counter.ignored_files[filetype].append(file)
@@ -309,8 +333,8 @@ def main() -> None:
     print(
         f"remaining tokens given 128K context window: {128_000 - token_counter.total:,}"
     )
-    if args.output:
-        output_as_json(token_counter, args.output)
+    if args.json:
+        output_as_json(token_counter, args.json)
 
 
 if __name__ == "__main__":
