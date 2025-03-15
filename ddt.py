@@ -228,6 +228,7 @@ Additional Helpers
 """
 
 
+# TODO: implement https://github.com/cpburnz/python-pathspec for gitignore and rewrite from scratch
 # AI wrote this code.
 def parse_gitignore(root: Path) -> set[str]:
     """
