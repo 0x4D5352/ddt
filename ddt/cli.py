@@ -28,14 +28,25 @@ def setup_argparse() -> argparse.ArgumentParser:
     )
 
     parser.add_argument(
-        "--respect-gitignore",
+        "-g",
+        "--include-gitignore",
         action="store_true",
-        help="exclude files found in the .gitignore file - NOTE: not implemented yet.",
+        help="include files found in the .gitignore file, which are excluded by default",
+        default=False,
     )
     parser.add_argument(
-        "--ignore-dotfiles",
+        "-d",
+        "--include-dotfiles",
         action="store_true",
-        help="exclude files and directories beginning with a dot (.) - NOTE: not implemented yet.",
+        help="include files and directories beginning with a dot (.), which are excluded by default - NOTE: not implemented yet.",
+        default=False,
+    )
+    parser.add_argument(
+        "-s",
+        "--include-symlinks",
+        action="store_true",
+        help="include files and directories symlinked from outside the target directory, which are excluded by default.",
+        default=False,
     )
 
     parser.add_argument(
@@ -65,7 +76,7 @@ def setup_argparse() -> argparse.ArgumentParser:
         "-i",
         "--include",
         action="append",
-        help="specify file formats to include when counting. this flag may be set multiple times for multiple entries. cannot bet set if excluding files",
+        help="specify file formats to include when counting. this flag may be set multiple times for multiple entries. cannot be set if excluding files",
     )
     return parser
 
