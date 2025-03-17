@@ -22,33 +22,13 @@ def main() -> None:
         print("ERROR: Path Provided Is Not A Directory")
         sysexit(1)
 
-    # TODO: make a class method
-    if args.exclude is not None:
-        excluded_files: list[Path] = []
-        for ext in args.exclude:
-            excluded_files.extend(file.resolve() for file in root.glob(f"**/*.{ext}"))
-    else:
-        excluded_files: list[Path] = []
-
-    # TODO: make part of init function in class
-    if args.include is not None:
-        included_files: list[Path] = []
-        for ext in args.include:
-            included_files.extend(file.resolve() for file in root.glob(f"**/*.{ext}"))
-    else:
-        included_files: list[Path] = []
-
-    # TODO: make part of init function in class
-    gitignore = cli.parse_gitignore(root)
-
-    logging.print_with_separator("Parsing directory...", after=False)
-    # TODO: make this part of the init function, it should be able to construct this itself
-    files = [file.resolve() for file in root.glob("**/*.*")]
-    token_counter = models.TokenCounter(root, files)
+    token_counter = models.TokenCounter(root)
+    token_counter.add_exclusions(args.exclude)
+    token_counter.add_inclusions(args.include)
 
     print("Parsing files...\n")
     # TODO: make a class method
-    for file in files:
+    for file in token_counter.all_files:
         if file.is_dir():
             continue
         filename = file.name
@@ -59,11 +39,17 @@ def main() -> None:
                 token_counter.ignored_files[filetype] = []
             token_counter.ignored_files[filetype].append(file)
 
-        if len(included_files) > 0 and file not in included_files:
+        if (
+            len(token_counter.included_files) > 0
+            and file not in token_counter.included_files
+        ):
             add_to_ignored(file, filetype)
             continue
 
-        if len(excluded_files) > 0 and file in excluded_files:
+        if (
+            len(token_counter.excluded_files) > 0
+            and file in token_counter.excluded_files
+        ):
             add_to_ignored(file, filetype)
             continue
 
@@ -73,7 +59,7 @@ def main() -> None:
             add_to_ignored(file, filetype)
             continue
 
-        if not args.include_gitignore and file in gitignore:
+        if not args.include_gitignore and file in token_counter.gitignore:
             add_to_ignored(file, filetype)
             continue
 
