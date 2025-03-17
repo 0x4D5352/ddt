@@ -32,21 +32,18 @@ def setup_argparse() -> argparse.ArgumentParser:
         "--include-gitignore",
         action="store_true",
         help="include files found in the .gitignore file, which are excluded by default",
-        default=False,
     )
     parser.add_argument(
         "-d",
         "--include-dotfiles",
         action="store_true",
         help="include files and directories beginning with a dot (.), which are excluded by default - NOTE: not implemented yet.",
-        default=False,
     )
     parser.add_argument(
         "-s",
         "--include-symlinks",
         action="store_true",
         help="include files and directories symlinked from outside the target directory, which are excluded by default.",
-        default=False,
     )
 
     parser.add_argument(
@@ -161,5 +158,4 @@ def parse_gitignore(root: Path) -> set[str]:
         for match in matches:
             ignored.add(match)
 
-    print(ignored)
     return ignored
