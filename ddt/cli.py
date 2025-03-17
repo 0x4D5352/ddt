@@ -31,13 +31,13 @@ def setup_argparse() -> argparse.ArgumentParser:
         "-g",
         "--include-gitignore",
         action="store_true",
-        help="include files found in the .gitignore file, which are excluded by default",
+        help="include files and directories found in the .gitignore file",
     )
     parser.add_argument(
         "-d",
         "--include-dotfiles",
         action="store_true",
-        help="include files and directories beginning with a dot (.), which are excluded by default - NOTE: not implemented yet.",
+        help="include files and directories beginning with a dot (.)",
     )
     parser.add_argument(
         "-s",
