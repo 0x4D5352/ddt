@@ -43,11 +43,15 @@ class TokenCounter:
         }
 
     def add_exclusions(self, exclusions: list[str]) -> None:
+        if exclusions is None or len(exclusions) < 1:
+            return
         for ext in exclusions:
             for file in self.root.glob(f"**/*.{ext}"):
                 self.excluded_files.add(file.resolve())
 
     def add_inclusions(self, inclusions: list[str]) -> None:
+        if inclusions is None or len(inclusions) < 1:
+            return
         for ext in inclusions:
             for file in self.root.glob(f"**/*.{ext}"):
                 self.included_files.add(file.resolve())
