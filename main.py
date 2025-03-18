@@ -1,3 +1,4 @@
+import mimetypes
 from sys import exit as sysexit
 from ddt import cli, logging, tokenizer, models
 from pathlib import Path
@@ -26,45 +27,49 @@ def main() -> None:
     token_counter.add_exclusions(args.exclude)
     token_counter.add_inclusions(args.include)
 
+    mimetypes.init()
     print("Parsing files...\n")
     # TODO: make a class method
     for file in token_counter.all_files:
         if file.is_dir():
             continue
-        filename = file.name
-        filetype = grab_suffix(file)
+        file_name = file.name
+        file_type, file_encoding = mimetypes.guess_type(file)
+        if file_type is None or file_encoding is None:
+            print(file_type)
+            continue
 
-        def add_to_ignored(file: Path, filetype: str):
-            if filetype not in token_counter.ignored_files:
-                token_counter.ignored_files[filetype] = []
-            token_counter.ignored_files[filetype].append(file)
+        def add_to_ignored(file: Path, file_encoding: str):
+            if file_encoding not in token_counter.ignored_files:
+                token_counter.ignored_files[file_encoding] = []
+            token_counter.ignored_files[file_encoding].append(file)
 
         if (
             len(token_counter.included_files) > 0
             and file not in token_counter.included_files
         ):
-            add_to_ignored(file, filetype)
+            add_to_ignored(file, file_encoding)
             continue
 
         if (
             len(token_counter.excluded_files) > 0
             and file in token_counter.excluded_files
         ):
-            add_to_ignored(file, filetype)
+            add_to_ignored(file, file_encoding)
             continue
 
         if not args.include_dotfiles and any(
             part.startswith(".") for part in file.parts
         ):
-            add_to_ignored(file, filetype)
+            add_to_ignored(file, file_encoding)
             continue
 
         if not args.include_gitignore and file in token_counter.gitignore:
-            add_to_ignored(file, filetype)
+            add_to_ignored(file, file_encoding)
             continue
 
         if not args.include_symlinks and root.name not in file.parts:
-            add_to_ignored(file, filetype)
+            add_to_ignored(file, file_encoding)
             continue
 
         logging.print_if_verbose(f"reading {str(file)}", args.verbose)
@@ -72,18 +77,18 @@ def main() -> None:
         try:
             text = file.read_text()
         except UnicodeDecodeError:
-            if filetype not in token_counter.ignored_files:
-                token_counter.ignored_files[filetype] = []
-            token_counter.ignored_files[filetype].append(file)
+            if file_type not in token_counter.ignored_files:
+                token_counter.ignored_files[file_type] = []
+            token_counter.ignored_files[file_type].append(file)
             print(f"file {file.name} hit unicode error, ignoring")
             continue
         token_counts = tokenizer.num_tokens_from_string(text, args.model)
-        if filetype not in token_counter.scanned_files:
-            token_counter.scanned_files[filetype] = models.FileCategory(filetype)
-        token_counter.scanned_files[filetype].files.append(
-            {"file": filename, "tokens": token_counts}
+        if file_type not in token_counter.scanned_files:
+            token_counter.scanned_files[file_type] = models.FileCategory(file_type)
+        token_counter.scanned_files[file_type].files.append(
+            {"file": file_name, "tokens": token_counts}
         )
-        token_counter.scanned_files[filetype].total += token_counts
+        token_counter.scanned_files[file_type].total += token_counts
         token_counter.total += token_counts
 
     print("\nParsing complete!")
@@ -93,11 +98,11 @@ def main() -> None:
             for file in ignored:
                 print(str(file))
 
-    for extension, filetype in token_counter.scanned_files.items():
+    for extension, file_type in token_counter.scanned_files.items():
         logging.print_with_separator(f"{extension} tokens:")
-        for file in filetype.files:
+        for file in file_type.files:
             print(f"{file['file']}: {file['tokens']:,} tokens")
-        print(f"{filetype.extension} total: {filetype.total:,} tokens")
+        print(f"{file_type.extension} total: {file_type.total:,} tokens")
 
     logging.print_with_separator(f"grand total: {token_counter.total:,}")
     print(
