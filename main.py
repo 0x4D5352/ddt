@@ -1,3 +1,4 @@
+import mimetypes
 from sys import exit as sysexit
 from ddt import cli, logging, tokenizer, models
 from pathlib import Path
@@ -26,6 +27,7 @@ def main() -> None:
     token_counter.add_exclusions(args.exclude)
     token_counter.add_inclusions(args.include)
 
+    mimetypes.init()
     print("Parsing files...\n")
     # TODO: make a class method
     for file in token_counter.all_files:
@@ -33,6 +35,10 @@ def main() -> None:
             continue
         filename = file.name
         filetype = grab_suffix(file)
+        mime_grabber = mimetypes.guess_file_type(file)
+        print(f"mime: {mime_grabber}")
+        # mime_map = mimetypes.types_map[f".{filetype}"]
+        # print(f"mime from map: {mime_map}")
 
         def add_to_ignored(file: Path, filetype: str):
             if filetype not in token_counter.ignored_files:
