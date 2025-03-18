@@ -28,14 +28,22 @@ def setup_argparse() -> argparse.ArgumentParser:
     )
 
     parser.add_argument(
-        "--respect-gitignore",
+        "-g",
+        "--include-gitignore",
         action="store_true",
-        help="exclude files found in the .gitignore file - NOTE: not implemented yet.",
+        help="include files and directories found in the .gitignore file",
     )
     parser.add_argument(
-        "--ignore-dotfiles",
+        "-d",
+        "--include-dotfiles",
         action="store_true",
-        help="exclude files and directories beginning with a dot (.) - NOTE: not implemented yet.",
+        help="include files and directories beginning with a dot (.)",
+    )
+    parser.add_argument(
+        "-s",
+        "--include-symlinks",
+        action="store_true",
+        help="include files and directories symlinked from outside the target directory, which are excluded by default.",
     )
 
     parser.add_argument(
@@ -65,7 +73,7 @@ def setup_argparse() -> argparse.ArgumentParser:
         "-i",
         "--include",
         action="append",
-        help="specify file formats to include when counting. this flag may be set multiple times for multiple entries. cannot bet set if excluding files",
+        help="specify file formats to include when counting. this flag may be set multiple times for multiple entries. cannot be set if excluding files",
     )
     return parser
 
@@ -78,7 +86,7 @@ Output methods
 class TokenEncoder(json.JSONEncoder):
     def default(self, o: Any) -> Any:
         if isinstance(o, models.TokenCounter) or isinstance(o, models.FileCategory):
-            return o.to_dict()
+            return o._to_dict()
         return super().default(o)
 
 
@@ -90,65 +98,3 @@ def output_as_json(token_counter: models.TokenCounter, file_name: str) -> None:
 """
 Additional Helpers
 """
-
-
-# TODO: implement https://github.com/cpburnz/python-pathspec for gitignore and rewrite from scratch
-# AI wrote this code.
-def parse_gitignore(root: Path) -> set[str]:
-    """
-    Reads the .gitignore file in the given root directory, interprets its patterns,
-    and returns a set of Paths representing all files and directories within root that match
-    those patterns. Lines that are empty or start with '#' (comments) are ignored.
-
-    For pattern matching:
-      - Patterns that start with '/' are treated as relative to the root.
-      - Patterns that contain a slash (but do not start with '/') are also treated as relative.
-      - Patterns without any slash are searched recursively using rglob.
-      - If a pattern ends with '/', it is interpreted as a directory (the trailing slash is removed
-        before matching).
-
-    Args:
-        root (Path): The root directory containing the .gitignore file.
-
-    Returns:
-        Set[Path]: A set of Paths that match the patterns specified in the .gitignore file.
-    """
-    ignored = set()
-    gitignore_file = root / ".gitignore"
-
-    try:
-        with gitignore_file.open("r") as f:
-            patterns = []
-            for line in f:
-                stripped = line.strip()
-                # Skip empty lines or comments.
-                if not stripped or stripped.startswith("#"):
-                    continue
-                patterns.append(stripped)
-    except FileNotFoundError:
-        return ignored  # No .gitignore file found.
-
-    for pattern in patterns:
-        # Check if the pattern is meant for directories (ends with a slash)
-        if pattern.endswith("/"):
-            # Remove trailing slash for glob matching.
-            pattern = pattern.rstrip("/")
-
-        # If the pattern starts with '/', it is anchored to the root.
-        if pattern.startswith("/"):
-            # Remove the leading slash.
-            pattern = pattern[1:]
-            # Use glob relative to the root (non-recursive).
-            matches = root.glob(pattern)
-        # If the pattern contains a slash somewhere, treat it as relative to the root.
-        elif "/" in pattern:
-            matches = root.glob(pattern)
-        else:
-            # Pattern without a slash: search recursively.
-            matches = root.rglob(pattern)
-
-        for match in matches:
-            ignored.add(match)
-
-    print(ignored)
-    return ignored
