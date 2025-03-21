@@ -84,12 +84,19 @@ class TokenCounter:
         return tokenizer.calculate_text_tokens(text, self.model)
 
     def count_image_file(self, file: Path, file_extension: str) -> int:
-        img = Image.open(file)
-        return tokenizer.calculate_image_tokens(*img.size)
+        try:
+            img = Image.open(file)
+            return tokenizer.calculate_image_tokens(*img.size)
+        except Exception as e:
+            if file_extension not in self.ignored_files:
+                self.ignored_files[file_extension] = []
+            self.ignored_files[file_extension].append(file)
+            print(f"file {file.name} hit error {e}, ignoring")
+            return 0
 
-    # TODO: implement https://github.com/cpburnz/python-pathspec for gitignore and rewrite from scratch
-    # AI wrote this code.
+    # AI rewrote this function for me, need to replace.
     def parse_gitignore(self, root: Path) -> set[Path]:
+        # TODO: implement https://github.com/cpburnz/python-pathspec for gitignore and rewrite from scratch
         """
         Reads the .gitignore file in the given root directory, interprets its patterns,
         and returns a set of Paths representing all files and directories within root that match

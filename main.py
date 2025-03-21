@@ -1,6 +1,6 @@
 import mimetypes
 from sys import exit as sysexit
-from ddt import cli, logging, tokenizer, models
+from ddt import cli, logging, models
 from pathlib import Path
 
 """
@@ -10,10 +10,9 @@ Main function
 
 def main() -> None:
     print("Hello from tokenizer!")
-    parser = cli.setup_argparse()
 
-    # NOTE: maybe i just want to pass this to the tokencounter?
-    args = parser.parse_args()
+    args = cli.CLI()
+
     if len(args.directory) == 0:
         print("ERROR: No Directory Provided")
         sysexit(1)
@@ -61,17 +60,15 @@ def main() -> None:
             add_to_ignored(file, file_extension)
             continue
 
-        if not args.include_dotfiles and any(
-            part.startswith(".") for part in file.parts
-        ):
+        if not args.dotfiles and any(part.startswith(".") for part in file.parts):
             add_to_ignored(file, file_extension)
             continue
 
-        if not args.include_gitignore and file in token_counter.gitignore:
+        if not args.gitignore and file in token_counter.gitignore:
             add_to_ignored(file, file_extension)
             continue
 
-        if not args.include_symlinks and root.name not in file.parts:
+        if not args.symlinks and root.name not in file.parts:
             add_to_ignored(file, file_extension)
             continue
 
@@ -80,26 +77,28 @@ def main() -> None:
         if mime:
             category = mime.split("/")[0]
             match category:
-                case "text" | "json":
-                    token_counts = token_counter.count_text_file(file, file_extension)
                 case "image":
-                    # TODO: figure out how to let the user decide on if they're including images or not. maybe default to not?
-                    token_counts = token_counter.count_image_file(file, file_extension)
+                    if args.images:
+                        token_counts = token_counter.count_image_file(
+                            file, file_extension
+                        )
+                    else:
+                        token_counts = None
                 case _:
-                    # TODO: have a better way of doing this
+                    # currently assuming everything is a text file if it's not an image
                     token_counts = token_counter.count_text_file(file, file_extension)
         else:
-            # TODO: fix this logic
-            token_counts = 0
-        if file_extension not in token_counter.scanned_files:
-            token_counter.scanned_files[file_extension] = models.FileCategory(
-                file_extension
+            token_counts = token_counter.count_text_file(file, file_extension)
+        if token_counts:
+            if file_extension not in token_counter.scanned_files:
+                token_counter.scanned_files[file_extension] = models.FileCategory(
+                    file_extension
+                )
+            token_counter.scanned_files[file_extension].files.append(
+                {"file": file.name, "tokens": token_counts}
             )
-        token_counter.scanned_files[file_extension].files.append(
-            {"file": file.name, "tokens": token_counts}
-        )
-        token_counter.scanned_files[file_extension].total += token_counts
-        token_counter.total += token_counts
+            token_counter.scanned_files[file_extension].total += token_counts
+            token_counter.total += token_counts
 
     print("\nParsing complete!")
     if args.verbose:
