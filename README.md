@@ -3,7 +3,7 @@
 ![A GIF showing DDT running on the curl source code](./assets/demo.gif)
 
 This is a CLI written in python (and rewritten in golang if i have time) that
-will scan a directory and count the number of tokens per text file, subdivided
+will scan a directory and count the number of tokens per file, subdivided
 by filetype. Useful for figuring out how difficult it will be for a Large
 Language Model to hold the entirety of a given set of files in its context window.
 
@@ -48,6 +48,12 @@ On average, a token works out to about 0.75 of an English word.
 If you'd like to see examples of how text is broken up into tokens, check out
 OpenAI's [Token Calculator](https://platform.openai.com/tokenizer) in their API
 reference documentation.
+
+Multimodal models have the ability to parse images as well as text. The
+calculation is based on how many 512x512 tiles can fit into a scaled version
+of the input image. To read more about how this process works, check out
+[this article](https://medium.com/@teekaifeng/gpt4o-visual-tokenizer-an-illustration-c69695dd4a39)
+by Tee Kai Feng.
 
 ## What is the Context Window?
 

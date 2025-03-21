@@ -76,15 +76,17 @@ def main() -> None:
             continue
 
         logging.print_if_verbose(f"reading {str(file)}", args.verbose)
-        # TODO: implement mimetypes for choosing tokenization method: https://docs.python.org/3/library/mimetypes.html
+
         if mime:
             category = mime.split("/")[0]
             match category:
                 case "text" | "json":
                     token_counts = token_counter.count_text_file(file, file_extension)
                 case "image":
+                    # TODO: figure out how to let the user decide on if they're including images or not. maybe default to not?
                     token_counts = token_counter.count_image_file(file, file_extension)
                 case _:
+                    # TODO: have a better way of doing this
                     token_counts = token_counter.count_text_file(file, file_extension)
         else:
             # TODO: fix this logic

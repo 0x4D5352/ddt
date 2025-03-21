@@ -85,9 +85,7 @@ class TokenCounter:
 
     def count_image_file(self, file: Path, file_extension: str) -> int:
         img = Image.open(file)
-        width = img.width
-        height = img.height
-        return tokenizer.calculate_image_tokens(width, height)
+        return tokenizer.calculate_image_tokens(*img.size)
 
     # TODO: implement https://github.com/cpburnz/python-pathspec for gitignore and rewrite from scratch
     # AI wrote this code.

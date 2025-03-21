@@ -42,7 +42,7 @@ def setup_argparse() -> argparse.ArgumentParser:
         "-s",
         "--include-symlinks",
         action="store_true",
-        help="include files and directories symlinked from outside the target directory, which are excluded by default.",
+        help="include files and directories symlinked from outside the target directory",
     )
 
     parser.add_argument(
@@ -63,13 +63,11 @@ def setup_argparse() -> argparse.ArgumentParser:
 
     file_types_group = parser.add_mutually_exclusive_group()
     file_types_group.add_argument(
-        "-e",
         "--exclude",
         action="append",
         help="specify file formats to ignore from counting. this flag may be set multiple times for multiple entries. cannot be set if including files",
     )
     file_types_group.add_argument(
-        "-i",
         "--include",
         action="append",
         help="specify file formats to include when counting. this flag may be set multiple times for multiple entries. cannot be set if excluding files",
