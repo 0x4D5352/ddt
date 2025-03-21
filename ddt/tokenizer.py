@@ -7,7 +7,7 @@ Tokenizing methods
 """
 
 
-def num_tokens_from_string(string: str, model_name: str) -> int:
+def calculate_text_tokens(string: str, model_name: str) -> int:
     """Returns the number of tokens in a text string"""
     encoding = tiktoken.encoding_for_model(model_name)
     num_tokens = len(encoding.encode(string))

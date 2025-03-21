@@ -1,7 +1,6 @@
 import json
-from pathlib import Path
 from typing import Any
-from ddt import models, constants
+from ddt import models
 import argparse
 
 """
@@ -51,8 +50,8 @@ def setup_argparse() -> argparse.ArgumentParser:
         "--model",
         action="store",
         help="specify a model to use for token approximation. default is 'gpt-4o'",
-        choices=constants.MODEL_CHOICES,
-        default=constants.GPT_4O,
+        choices=models.MODEL_CHOICES,
+        default=models.GPT_4O,
     )
 
     parser.add_argument(

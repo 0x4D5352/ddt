@@ -1,4 +1,19 @@
 from pathlib import Path
+from typing import NewType
+from . import tokenizer
+from PIL import Image
+
+"""
+type aliasing for convenince
+"""
+
+Model = NewType("Model", str)
+GPT_4O: Model = Model("gpt-4o")
+GPT_4O_MINI: Model = Model("gpt-4o-mini")
+GPT_4_TURBO: Model = Model("gpt-4-turbo")
+GPT_4: Model = Model("gpt-4")
+
+MODEL_CHOICES: set[Model] = set([GPT_4O, GPT_4O_MINI, GPT_4_TURBO, GPT_4])
 
 """
 Data models
@@ -17,7 +32,7 @@ class TokenCounter:
         total(int): The total number of tokens present within the directory.
     """
 
-    def __init__(self, root: Path) -> None:
+    def __init__(self, root: Path, model: Model) -> None:
         self.root: Path = root
         # TODO: make all the .resolve() calls optional
         self.all_files: list[Path] = [file.resolve() for file in root.glob("**/*.*")]
@@ -27,6 +42,7 @@ class TokenCounter:
         self.included_files: set[Path] = set()
         self.gitignore: set[Path] = self.parse_gitignore(root)
         self.total: int = 0
+        self.model = model
 
     def _to_dict(self):
         return {
@@ -55,6 +71,23 @@ class TokenCounter:
         for ext in inclusions:
             for file in self.root.glob(f"**/*.{ext}"):
                 self.included_files.add(file.resolve())
+
+    def count_text_file(self, file: Path, file_extension: str) -> int:
+        try:
+            text = file.read_text()
+        except UnicodeDecodeError:
+            if file_extension not in self.ignored_files:
+                self.ignored_files[file_extension] = []
+            self.ignored_files[file_extension].append(file)
+            print(f"file {file.name} hit unicode error, ignoring")
+            return 0
+        return tokenizer.calculate_text_tokens(text, self.model)
+
+    def count_image_file(self, file: Path, file_extension: str) -> int:
+        img = Image.open(file)
+        width = img.width
+        height = img.height
+        return tokenizer.calculate_image_tokens(width, height)
 
     # TODO: implement https://github.com/cpburnz/python-pathspec for gitignore and rewrite from scratch
     # AI wrote this code.

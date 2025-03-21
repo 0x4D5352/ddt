@@ -23,7 +23,7 @@ def main() -> None:
         print("ERROR: Path Provided Is Not A Directory")
         sysexit(1)
 
-    token_counter = models.TokenCounter(root)
+    token_counter = models.TokenCounter(root, args.model)
     token_counter.add_exclusions(args.exclude)
     token_counter.add_inclusions(args.include)
 
@@ -31,14 +31,16 @@ def main() -> None:
     print("Parsing files...\n")
     # TODO: make a class method
     for file in token_counter.all_files:
+        logging.print_if_verbose(f"checking {str(file)}", args.verbose)
         if file.is_dir():
             continue
-        filename = file.name
-        filetype = grab_suffix(file)
-        mime_grabber = mimetypes.guess_file_type(file)
-        print(f"mime: {mime_grabber}")
-        # mime_map = mimetypes.types_map[f".{filetype}"]
-        # print(f"mime from map: {mime_map}")
+        file_extension = grab_suffix(file)
+        mime: str | None = (
+            mimetypes.types_map[file_extension]
+            if file_extension in mimetypes.types_map
+            else None
+        )
+        print(f"mime from map: {mime}")
 
         def add_to_ignored(file: Path, filetype: str):
             if filetype not in token_counter.ignored_files:
@@ -49,47 +51,52 @@ def main() -> None:
             len(token_counter.included_files) > 0
             and file not in token_counter.included_files
         ):
-            add_to_ignored(file, filetype)
+            add_to_ignored(file, file_extension)
             continue
 
         if (
             len(token_counter.excluded_files) > 0
             and file in token_counter.excluded_files
         ):
-            add_to_ignored(file, filetype)
+            add_to_ignored(file, file_extension)
             continue
 
         if not args.include_dotfiles and any(
             part.startswith(".") for part in file.parts
         ):
-            add_to_ignored(file, filetype)
+            add_to_ignored(file, file_extension)
             continue
 
         if not args.include_gitignore and file in token_counter.gitignore:
-            add_to_ignored(file, filetype)
+            add_to_ignored(file, file_extension)
             continue
 
         if not args.include_symlinks and root.name not in file.parts:
-            add_to_ignored(file, filetype)
+            add_to_ignored(file, file_extension)
             continue
 
         logging.print_if_verbose(f"reading {str(file)}", args.verbose)
         # TODO: implement mimetypes for choosing tokenization method: https://docs.python.org/3/library/mimetypes.html
-        try:
-            text = file.read_text()
-        except UnicodeDecodeError:
-            if filetype not in token_counter.ignored_files:
-                token_counter.ignored_files[filetype] = []
-            token_counter.ignored_files[filetype].append(file)
-            print(f"file {file.name} hit unicode error, ignoring")
-            continue
-        token_counts = tokenizer.num_tokens_from_string(text, args.model)
-        if filetype not in token_counter.scanned_files:
-            token_counter.scanned_files[filetype] = models.FileCategory(filetype)
-        token_counter.scanned_files[filetype].files.append(
-            {"file": filename, "tokens": token_counts}
+        if mime:
+            category = mime.split("/")[0]
+            match category:
+                case "text" | "json":
+                    token_counts = token_counter.count_text_file(file, file_extension)
+                case "image":
+                    token_counts = token_counter.count_image_file(file, file_extension)
+                case _:
+                    token_counts = token_counter.count_text_file(file, file_extension)
+        else:
+            # TODO: fix this logic
+            token_counts = 0
+        if file_extension not in token_counter.scanned_files:
+            token_counter.scanned_files[file_extension] = models.FileCategory(
+                file_extension
+            )
+        token_counter.scanned_files[file_extension].files.append(
+            {"file": file.name, "tokens": token_counts}
         )
-        token_counter.scanned_files[filetype].total += token_counts
+        token_counter.scanned_files[file_extension].total += token_counts
         token_counter.total += token_counts
 
     print("\nParsing complete!")
@@ -99,11 +106,11 @@ def main() -> None:
             for file in ignored:
                 print(str(file))
 
-    for extension, filetype in token_counter.scanned_files.items():
+    for extension, file_extension in token_counter.scanned_files.items():
         logging.print_with_separator(f"{extension} tokens:")
-        for file in filetype.files:
+        for file in file_extension.files:
             print(f"{file['file']}: {file['tokens']:,} tokens")
-        print(f"{filetype.extension} total: {filetype.total:,} tokens")
+        print(f"{file_extension.extension} total: {file_extension.total:,} tokens")
 
     logging.print_with_separator(f"grand total: {token_counter.total:,}")
     print(
@@ -115,13 +122,10 @@ def main() -> None:
 
 def grab_suffix(file: Path) -> str:
     if len(file.suffixes) == 1:
-        return file.suffix[1:]
+        return file.suffix
     result = ""
-    for index, suffix in enumerate(file.suffixes):
-        if index == 0:
-            result += suffix[1:]
-        else:
-            result += suffix
+    for suffix in file.suffixes:
+        result += suffix
     return result
 
 
