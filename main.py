@@ -83,22 +83,28 @@ def main() -> None:
                             file, file_extension
                         )
                     else:
-                        token_counts = None
+                        # TODO: replace with just ignoring the file straight up
+                        token_counts = token_counter.count_text_file(
+                            file, file_extension
+                        )
                 case _:
                     # currently assuming everything is a text file if it's not an image
                     token_counts = token_counter.count_text_file(file, file_extension)
         else:
             token_counts = token_counter.count_text_file(file, file_extension)
-        if token_counts:
-            if file_extension not in token_counter.scanned_files:
-                token_counter.scanned_files[file_extension] = models.FileCategory(
-                    file_extension
-                )
-            token_counter.scanned_files[file_extension].files.append(
-                {"file": file.name, "tokens": token_counts}
+
+        if file in token_counter.ignored_files:
+            continue
+
+        if file_extension not in token_counter.scanned_files:
+            token_counter.scanned_files[file_extension] = models.FileCategory(
+                file_extension
             )
-            token_counter.scanned_files[file_extension].total += token_counts
-            token_counter.total += token_counts
+        token_counter.scanned_files[file_extension].files.append(
+            {"file": file.name, "tokens": token_counts}
+        )
+        token_counter.scanned_files[file_extension].total += token_counts
+        token_counter.total += token_counts
 
     print("\nParsing complete!")
     if args.verbose:
