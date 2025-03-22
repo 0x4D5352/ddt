@@ -1,4 +1,5 @@
 import mimetypes
+from os import sep
 from sys import exit as sysexit
 from ddt import cli, logging, models
 from pathlib import Path
@@ -107,17 +108,22 @@ def main() -> None:
         token_counter.total += token_counts
 
     print("\nParsing complete!")
+    logging.print_with_separator("ignored:", sep="=")
     if args.verbose:
         for extension, ignored in token_counter.ignored_files.items():
-            logging.print_with_separator(f"{extension} files ignored:")
+            logging.print_with_separator(f"{extension} files ignored:", sep="*")
             for file in ignored:
                 print(str(file))
 
+    logging.print_with_separator("totals:")
     for extension, file_extension in token_counter.scanned_files.items():
-        logging.print_with_separator(f"{extension} tokens:")
+        logging.print_with_separator(f"{extension} tokens:", sep="*")
         for file in file_extension.files:
             print(f"{file['file']}: {file['tokens']:,} tokens")
-        print(f"{file_extension.extension} total: {file_extension.total:,} tokens")
+        logging.print_with_separator(
+            f"{file_extension.extension} total: {file_extension.total:,} tokens",
+            ".",
+        )
 
     logging.print_with_separator(f"grand total: {token_counter.total:,}")
     print(

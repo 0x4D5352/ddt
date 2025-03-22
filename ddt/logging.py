@@ -3,7 +3,7 @@ Logging/Stdout Helpers
 """
 
 
-def print_with_separator(string: str, after: bool = True) -> None:
+def print_with_separator(string: str, sep: str = "-", after: bool = True) -> None:
     """
     A helper method to add line separators between sections of the stdout log.
 
@@ -13,7 +13,7 @@ def print_with_separator(string: str, after: bool = True) -> None:
     """
     if not after:
         print(string)
-    print("-------------------------------------------------")
+    print("".join(sep for _ in range(50)))
     if after:
         print(string)
 
