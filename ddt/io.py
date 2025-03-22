@@ -1,27 +1,65 @@
 import json
 from typing import Any
 from ddt import models
+from pathlib import Path
 import argparse
+
+"""
+Scanner Base Class
+"""
+
+
+class Scanner:
+    def __init__(
+        self,
+        directory_path: Path,
+        is_verbose: bool,
+        include_gitignore: bool,
+        include_dotfiles: bool,
+        include_symlinks: bool,
+        include_images: bool,
+        model: models.Model,
+        json_destination: Path,
+        exclude: list[str],
+        include: list[str],
+    ) -> None:
+        self.directory_path: Path = directory_path
+        self.is_verbose: bool = is_verbose
+        self.include_gitignore: bool = include_gitignore
+        self.include_dotfiles: bool = include_dotfiles
+        self.include_symlinks: bool = include_symlinks
+        self.include_images: bool = include_images
+        self.model: models.Model = model
+        self.json_destination: Path = json_destination
+        self.exclude: list[str] = exclude
+        self.include: list[str] = include
+
 
 """
 CLI Arg Parser
 """
 
 
-class CLI:
+# TODO: consider just making this a function instead of a subclass
+class CLI(Scanner):
     def __init__(self) -> None:
         parser = self.setup_argparse()
         args = parser.parse_args()
-        self.directory = args.directory
-        self.verbose = args.verbose
-        self.gitignore = args.include_gitignore
-        self.dotfiles = args.include_dotfiles
-        self.symlinks = args.include_symlinks
-        self.images = args.include_images
-        self.model = args.model
-        self.json = args.json
-        self.exclude = args.exclude
-        self.include = args.include
+        if args.config:
+            print("got a config!")
+            pass
+        super().__init__(
+            args.directory,
+            args.verbose,
+            args.include_gitignore,
+            args.include_dotfiles,
+            args.include_symlinks,
+            args.include_images,
+            args.model,
+            args.json,
+            args.exclude,
+            args.include,
+        )
 
     def setup_argparse(self) -> argparse.ArgumentParser:
         parser = argparse.ArgumentParser(
@@ -30,10 +68,18 @@ class CLI:
             epilog="Made with <3 by 0x4D5352",
         )
 
-        parser.add_argument(
+        inputs = parser.add_mutually_exclusive_group()
+        inputs.add_argument(
             "directory",
             help="the relative or absolute path to the directory you wish to scan",
+            type=Path,
         )
+        inputs.add_argument(
+            "--config",
+            help="the relative or absolute path towards the configuration file. excluded CLI flags will be replaced with defaults",
+            type=Path,
+        )
+
         parser.add_argument(
             "-v",
             "--verbose",
@@ -73,6 +119,7 @@ class CLI:
             help="specify a model to use for token approximation. default is 'gpt-4o'",
             choices=models.MODEL_CHOICES,
             default=models.GPT_4O,
+            type=models.Model,
         )
 
         parser.add_argument(
@@ -80,6 +127,7 @@ class CLI:
             "--json",
             action="store",
             help="save the results of the scan to a json file at the location specified. does not include stdout messages.",
+            type=Path,
         )
 
         file_types_group = parser.add_mutually_exclusive_group()
@@ -87,13 +135,51 @@ class CLI:
             "--exclude",
             action="append",
             help="specify file formats to ignore from counting. this flag may be set multiple times for multiple entries. cannot be set if including files",
+            type=str,
         )
         file_types_group.add_argument(
             "--include",
             action="append",
             help="specify file formats to include when counting. this flag may be set multiple times for multiple entries. cannot be set if excluding files",
+            type=str,
         )
         return parser
+
+
+"""
+JSON file parser
+"""
+
+
+# TODO: consider making this just a function, not a subclass
+class JSON(Scanner):
+    def __init__(self) -> None:
+        # TODO: parse a json input file
+        directory_path = Path()
+        is_verbose = False
+        include_gitignore = False
+        include_dotfiles = False
+        include_symlinks = False
+        include_images = False
+        model = models.GPT_4O
+        json_destination = Path()
+        exclude = [""]
+        include = [""]
+        super().__init__(
+            directory_path,
+            is_verbose,
+            include_gitignore,
+            include_dotfiles,
+            include_symlinks,
+            include_images,
+            model,
+            json_destination,
+            exclude,
+            include,
+        )
+
+    def parse_config_file(self):
+        pass
 
 
 """
@@ -108,11 +194,6 @@ class TokenEncoder(json.JSONEncoder):
         return super().default(o)
 
 
-def output_as_json(token_counter: models.TokenCounter, file_name: str) -> None:
-    with open(file_name, "w") as file:
-        json.dump(token_counter, file, cls=TokenEncoder, indent=2)
-
-
-"""
-Additional Helpers
-"""
+def output_as_json(token_counter: models.TokenCounter, file: Path) -> None:
+    with file.open("w") as f:
+        json.dump(token_counter, f, cls=TokenEncoder, indent=2)

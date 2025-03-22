@@ -1,6 +1,7 @@
+import mimetypes
 from pathlib import Path
 from typing import NewType
-from . import tokenizer
+from . import tokenizer, models, logging
 from PIL import Image
 
 """
@@ -32,7 +33,8 @@ class TokenCounter:
         total(int): The total number of tokens present within the directory.
     """
 
-    def __init__(self, root: Path, model: Model) -> None:
+    def __init__(self, root: Path, scanner: Scanner) -> None:
+        mimetypes.init()
         self.root: Path = root
         # TODO: make all the .resolve() calls optional
         self.all_files: list[Path] = [file.resolve() for file in root.glob("**/*.*")]
@@ -93,6 +95,82 @@ class TokenCounter:
             self.ignored_files[file_extension].append(file)
             print(f"file {file.name} hit error {e}, ignoring")
             return 0
+
+    def parse_files(self):
+        for file in self.all_files:
+            logging.print_if_verbose(f"checking {str(file)}", scanner.verbose)
+            if file.is_dir():
+                continue
+            file_extension = self.grab_suffix(file)
+            mime: str | None = (
+                mimetypes.types_map[file_extension]
+                if file_extension in mimetypes.types_map
+                else None
+            )
+            print(f"mime from map: {mime}")
+
+            def add_to_ignored(file: Path, filetype: str):
+                if filetype not in self.ignored_files:
+                    self.ignored_files[filetype] = []
+                self.ignored_files[filetype].append(file)
+
+            if len(self.included_files) > 0 and file not in self.included_files:
+                add_to_ignored(file, file_extension)
+                continue
+
+            if len(self.excluded_files) > 0 and file in self.excluded_files:
+                add_to_ignored(file, file_extension)
+                continue
+
+            if not scanner.dotfiles and any(
+                part.startswith(".") for part in file.parts
+            ):
+                add_to_ignored(file, file_extension)
+                continue
+
+            if not scanner.gitignore and file in self.gitignore:
+                add_to_ignored(file, file_extension)
+                continue
+
+            if not scanner.symlinks and self.root.name not in file.parts:
+                add_to_ignored(file, file_extension)
+                continue
+
+            logging.print_if_verbose(f"reading {str(file)}", scanner.verbose)
+
+            if mime:
+                category = mime.split("/")[0]
+                match category:
+                    case "image":
+                        if scanner.images:
+                            token_counts = self.count_image_file(file, file_extension)
+                        else:
+                            # TODO: replace with just ignoring the file straight up
+                            token_counts = self.count_text_file(file, file_extension)
+                    case _:
+                        # currently assuming everything is a text file if it's not an image
+                        token_counts = self.count_text_file(file, file_extension)
+            else:
+                token_counts = self.count_text_file(file, file_extension)
+
+            if file in self.ignored_files:
+                continue
+
+            if file_extension not in self.scanned_files:
+                self.scanned_files[file_extension] = models.FileCategory(file_extension)
+            self.scanned_files[file_extension].files.append(
+                {"file": file.name, "tokens": token_counts}
+            )
+            self.scanned_files[file_extension].total += token_counts
+            self.total += token_counts
+
+    def grab_suffix(self, file: Path) -> str:
+        if len(file.suffixes) == 1:
+            return file.suffix
+        result = ""
+        for suffix in file.suffixes:
+            result += suffix
+        return result
 
     # AI rewrote this function for me, need to replace.
     def parse_gitignore(self, root: Path) -> set[Path]:
