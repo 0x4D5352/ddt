@@ -1,5 +1,5 @@
 from sys import exit as sysexit
-from ddt import io, logging, models
+from ddt import cli, logging, models
 
 """
 Main function
@@ -9,28 +9,26 @@ Main function
 def main() -> None:
     print("Hello from tokenizer!")
 
-    # TODO: create an API-able endpoint or the ability to feed a JSON blob for parsing
-    scanner = io.CLI()
+    config = cli.CLI().generate_config()
 
-    if not scanner.directory_path:
+    if not config.root:
         print("ERROR: No Directory Provided")
         sysexit(1)
 
-    root = scanner.directory_path.resolve()
+    root = config.root.resolve()
     if not root.is_dir():
         print("ERROR: Path Provided Is Not A Directory")
         sysexit(1)
 
-    token_counter = models.TokenCounter(root, scanner.model)
-    token_counter.add_exclusions(scanner.exclude)
-    token_counter.add_inclusions(scanner.include)
+    token_counter = models.TokenCounter(config)
+    token_counter.add_exclusions(config.exclude)
+    token_counter.add_inclusions(config.include)
 
     print("Parsing files...\n")
-    # TODO: make a class method
 
     print("\nParsing complete!")
     logging.print_with_separator("ignored:", sep="=")
-    if scanner.is_verbose:
+    if config.is_verbose:
         for extension, ignored in token_counter.ignored_files.items():
             logging.print_with_separator(f"{extension} files ignored:", sep="*")
             for file in ignored:
@@ -50,8 +48,8 @@ def main() -> None:
     print(
         f"remaining tokens given 128K context window: {128_000 - token_counter.total:,}"
     )
-    if scanner.json_destination:
-        io.output_as_json(token_counter, scanner.json_destination)
+    if config.json_destination:
+        token_counter.output_as_json()
 
 
 if __name__ == "__main__":
