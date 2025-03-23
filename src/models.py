@@ -38,7 +38,6 @@ class Config:
     gitignore: set[Path] = field(init=False)
 
     def __post_init__(self):
-        print(f"output fmt: {self.output_format}")
         self.gitignore = self.parse_gitignore()
 
     # AI rewrote this function for me, need to replace.
