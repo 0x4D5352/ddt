@@ -2,7 +2,7 @@
 
 ![A GIF showing DDT running on the curl source code](./assets/demo.gif)
 
-This is a CLI written in python (and rewritten in golang if i have time) that
+DDT is a CLI written in python (and rewritten in golang if i have time) that
 will scan a directory and count the number of tokens per file, subdivided
 by filetype. Useful for figuring out how difficult it will be for a Large
 Language Model to hold the entirety of a given set of files in its context window.
@@ -25,15 +25,40 @@ python package and project manager.
 4. Run `python main.py /PATH/TO/TARGET`
 5. Remember to run `exit` when you're done to leave the python venv!
 
-You can exclude filetypes by passing in one or more `-e FILETYPE` flags,
-or you can include specific filetypes with one or more `-i FILETYPE` flags.
+### Command Line Flags
+
+Beyond the traditional `-h` and `-v` flags, DDT can be configured a number of ways:
+
+You can exclude filetypes by passing in one or more `-exclude FILETYPE` flags,
+or you can include only specific filetypes with one or more `-include FILETYPE` flags.
 You cannot specify both.
 
-To save your output as a JSON file, pass the `-j` or `--json` flag followed by
-a filename such as `out.json`.
+To save your output, pass the `-o` or `--output` flag followed by
+a filename such as `out.json`. To save the file in a structured output,
+pass one of the corresponding flags:
 
-DDT will attempt to ignore files that do not seem to contain text. If you encounter
-unhandled errors, please file a bug report using the Issues tab in github.
+- `--json`
+- `--markdown`
+- `--html`
+
+DDT ignores dotfiles (e.g. `.env` files and the `.git`
+directory), respects the `.gitignore` file, discards symlinks, and does
+not tokenize images. If you wish to alter any of these defaults, use the
+provided options:
+
+- `--include-dotfiles`
+- `--include-gitignore`
+- `--include-symlinks`
+- `--include-images`
+
+DDT works with both relative and absolute file paths. If you wish to force
+the output to print absolute file paths, pass the `-r` or `--resolve-paths` flag.
+
+The default tokenizer algorithm is based on GPT-4o. If you need to check the
+token counts for older models, such as gpt-4 or text-davinci-003,
+pass the corresponding model name into the `-m` or `--model` flag.
+If the model you wish to test is not listed, reference the model list from
+[this](https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb) OpenAI Cookbook.
 
 ### Config File
 
@@ -86,8 +111,7 @@ For reference: [curl](https://github.com/curl/curl) is approximately 1,750,000 t
 ## Help Commands
 
 ```bash
-❯ : uv run main.py -h
-usage: Tokenizer [-h] [-c CONFIG] [-v] [-g] [-d] [-s] [-i] [-r] [-m {gpt-4o-mini,gpt-4-turbo,gpt-4,gpt-4o}] [-j JSON] [--exclude EXCLUDE | --include INCLUDE] directory
+usage: Tokenizer [-h] [-c CONFIG] [-v] [-g] [-d] [-s] [-i] [-r] [-m {gpt-4,gpt-4o,text-davinci-003}] [-o OUTPUT] [--json | --markdown | --html] [--exclude EXCLUDE | --include INCLUDE] directory
 
 Crawls a given directory, counts the number of tokens per filetype in the project and returns a per-type total and grand total
 
@@ -106,10 +130,14 @@ options:
                         include files and directories symlinked from outside the target directory
   -i, --include-images  include image files found within the directory
   -r, --resolve-paths   resolve relative file paths to their absolute location
-  -m, --model {gpt-4o-mini,gpt-4-turbo,gpt-4,gpt-4o}
+  -m, --model {gpt-4,gpt-4o,text-davinci-003}
                         specify a model to use for token approximation. default is 'gpt-4o'
-  -j, --json JSON       save the results of the scan to a json file at the location specified. does not include stdout messages.
+  -o, --output OUTPUT   redirect output from STDOUT to a file at the location specified.
+  --json                save the results of the scan to a json file
+  --markdown            save the results of the scan to a markdown file
+  --html                save the results of the scan to a HTML file
   --exclude EXCLUDE     specify file formats to ignore from counting. this flag may be set multiple times for multiple entries. cannot be set if including files
   --include INCLUDE     specify file formats to include when counting. this flag may be set multiple times for multiple entries. cannot be set if excluding files
 
-Made with <3 by 0x4D5352```
+Made with <3 by 0x4D5352
+```

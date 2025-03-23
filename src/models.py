@@ -12,11 +12,9 @@ type aliasing for convenince
 
 Model = NewType("Model", str)
 GPT_4O: Model = Model("gpt-4o")
-GPT_4O_MINI: Model = Model("gpt-4o-mini")
-GPT_4_TURBO: Model = Model("gpt-4-turbo")
 GPT_4: Model = Model("gpt-4")
-
-MODEL_CHOICES: set[Model] = set([GPT_4O, GPT_4O_MINI, GPT_4_TURBO, GPT_4])
+TEXT_DA_VINCI_003: Model = Model("text-davinci-003")
+MODEL_CHOICES: set[Model] = set([GPT_4O, GPT_4, TEXT_DA_VINCI_003])
 
 """
 Config model
