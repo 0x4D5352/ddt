@@ -33,7 +33,7 @@ class Config:
         include_images: bool,
         resolve_paths: bool,
         model: Model,
-        json_destination: Path,
+        json_destination: Path | None,
         exclude: list[str],
         include: list[str],
     ):
@@ -45,7 +45,7 @@ class Config:
         self.include_images: bool = include_images
         self.resolve_paths: bool = resolve_paths
         self.model: Model = model
-        self.json_destination: Path = json_destination
+        self.json_destination: Path | None = json_destination
         self.exclude: list[str] = exclude
         self.include: list[str] = include
         self.gitignore: set[Path] = self.parse_gitignore()
@@ -256,16 +256,13 @@ class TokenCounter:
                         if self.config.include_images:
                             token_counts = self.count_image_file(file, file_extension)
                         else:
-                            # TODO: replace with just ignoring the file straight up
-                            token_counts = self.count_text_file(file, file_extension)
+                            add_to_ignored(file, file_extension)
+                            continue
                     case _:
                         # currently assuming everything is a text file if it's not an image
                         token_counts = self.count_text_file(file, file_extension)
             else:
                 token_counts = self.count_text_file(file, file_extension)
-
-            if file in self.ignored_files:
-                continue
 
             if file_extension not in self.scanned_files:
                 self.scanned_files[file_extension] = FileCategory(file_extension)
@@ -284,6 +281,9 @@ class TokenCounter:
         return result
 
     def output_as_json(self) -> None:
+        if not self.config.json_destination:
+            print("how did you get past the guard clause when calling this")
+            return
         with self.config.json_destination.open("w") as f:
             json.dump(self, f, cls=TokenEncoder, indent=2)
 

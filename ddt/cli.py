@@ -1,4 +1,5 @@
 from pathlib import Path
+from sys import exit as sysexit
 import json
 import argparse
 from . import models
@@ -91,7 +92,6 @@ class CLI:
             type=Path,
         )
 
-        # TODO: decide if this needs to be exclusive or not
         file_types_group = parser.add_mutually_exclusive_group()
         file_types_group.add_argument(
             "--exclude",
@@ -119,6 +119,12 @@ class CLI:
                 continue
             conf[arg] = value
 
+        if len(conf["exclude"]) > 0 and len(conf["include"]) > 0:
+            print(
+                "error: both inclusions and exclusions found. please remove one group"
+            )
+            sysexit(1)
+
         cfg = models.Config(
             root=conf["directory"].resolve(),
             is_verbose=conf["verbose"],
@@ -128,7 +134,9 @@ class CLI:
             include_images=conf["include_images"],
             resolve_paths=conf["resolve_paths"],
             model=conf["model"],
-            json_destination=Path(conf["json"]).resolve(),
+            json_destination=Path(conf["json"]).resolve()
+            if len(conf["json"]) > 0
+            else None,
             exclude=conf["exclude"],
             include=conf["include"],
         )

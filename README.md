@@ -35,6 +35,12 @@ a filename such as `out.json`.
 DDT will attempt to ignore files that do not seem to contain text. If you encounter
 unhandled errors, please file a bug report using the Issues tab in github.
 
+### Config File
+
+If you wish to configure DDT without passing multiple command line flags, you
+can provide a configuration file in JSON format with the `--config /path/to/config.json`
+flag. Any value not specified within the config will use the default arguments.
+
 ## What are Tokens?
 
 ![A screenshot of OpenAI's Tokenizer page, showing the tokens of the Bee Movie script](./assets/beemovie.png)
@@ -81,8 +87,7 @@ For reference: [curl](https://github.com/curl/curl) is approximately 1,750,000 t
 
 ```bash
 ❯ : uv run main.py -h
-Hello from tokenizer!
-usage: Tokenizer [-h] [-v] [--respect-gitignore] [--ignore-dotfiles] [-m {gpt-4o,gpt-4o-mini,gpt-4-turbo,gpt-4}] [-j JSON] [-e EXCLUDE | -i INCLUDE] directory
+usage: Tokenizer [-h] [-c CONFIG] [-v] [-g] [-d] [-s] [-i] [-r] [-m {gpt-4o-mini,gpt-4-turbo,gpt-4,gpt-4o}] [-j JSON] [--exclude EXCLUDE | --include INCLUDE] directory
 
 Crawls a given directory, counts the number of tokens per filetype in the project and returns a per-type total and grand total
 
@@ -91,16 +96,20 @@ positional arguments:
 
 options:
   -h, --help            show this help message and exit
+  -c, --config CONFIG   Load one or more configurations from a file. Unset configs will use defaults.
   -v, --verbose         set to increase logging to console
-  --respect-gitignore   exclude files found in the .gitignore file - NOTE: not implemented yet.
-  --ignore-dotfiles     exclude files and directories beginning with a dot (.) - NOTE: not implemented yet.
-  -m, --model {gpt-4o,gpt-4o-mini,gpt-4-turbo,gpt-4}
+  -g, --include-gitignore
+                        include files and directories found in the .gitignore file
+  -d, --include-dotfiles
+                        include files and directories beginning with a dot (.)
+  -s, --include-symlinks
+                        include files and directories symlinked from outside the target directory
+  -i, --include-images  include image files found within the directory
+  -r, --resolve-paths   resolve relative file paths to their absolute location
+  -m, --model {gpt-4o-mini,gpt-4-turbo,gpt-4,gpt-4o}
                         specify a model to use for token approximation. default is 'gpt-4o'
   -j, --json JSON       save the results of the scan to a json file at the location specified. does not include stdout messages.
-  -e, --exclude EXCLUDE
-                        specify file formats to ignore from counting. this flag may be set multiple times for multiple entries. cannot be set if including files
-  -i, --include INCLUDE
-                        specify file formats to include when counting. this flag may be set multiple times for multiple entries. cannot bet set if excluding files
+  --exclude EXCLUDE     specify file formats to ignore from counting. this flag may be set multiple times for multiple entries. cannot be set if including files
+  --include INCLUDE     specify file formats to include when counting. this flag may be set multiple times for multiple entries. cannot be set if excluding files
 
-Made with <3 by 0x4D5352
-```
+Made with <3 by 0x4D5352```
