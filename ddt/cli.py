@@ -91,6 +91,7 @@ class CLI:
             type=Path,
         )
 
+        # TODO: decide if this needs to be exclusive or not
         file_types_group = parser.add_mutually_exclusive_group()
         file_types_group.add_argument(
             "--exclude",
@@ -125,8 +126,9 @@ class CLI:
             include_dotfiles=conf["include_dotfiles"],
             include_symlinks=conf["include_symlinks"],
             include_images=conf["include_images"],
+            resolve_paths=conf["resolve_paths"],
             model=conf["model"],
-            json_destination=conf["json"],
+            json_destination=Path(conf["json"]).resolve(),
             exclude=conf["exclude"],
             include=conf["include"],
         )

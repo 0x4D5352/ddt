@@ -31,6 +31,7 @@ class Config:
         include_dotfiles: bool,
         include_symlinks: bool,
         include_images: bool,
+        resolve_paths: bool,
         model: Model,
         json_destination: Path,
         exclude: list[str],
@@ -42,6 +43,7 @@ class Config:
         self.include_dotfiles: bool = include_dotfiles
         self.include_symlinks: bool = include_symlinks
         self.include_images: bool = include_images
+        self.resolve_paths: bool = resolve_paths
         self.model: Model = model
         self.json_destination: Path = json_destination
         self.exclude: list[str] = exclude
@@ -132,9 +134,14 @@ class TokenCounter:
     def __init__(self, cfg: Config) -> None:
         mimetypes.init()
         self.config: Config = cfg
-        self.all_files: list[Path] = [
-            file.resolve() for file in self.config.root.glob("**/*.*")
-        ]
+        if self.config.resolve_paths:
+            self.all_files: list[Path] = [
+                file.resolve() for file in self.config.root.glob("**/*.*")
+            ]
+        else:
+            self.all_files: list[Path] = [
+                file for file in self.config.root.glob("**/*.*")
+            ]
         self.ignored_files: dict[str, list[Path]] = {}
         self.scanned_files: dict[str, FileCategory] = {}
         self.excluded_files: set[Path] = set()
@@ -235,7 +242,7 @@ class TokenCounter:
 
             if (
                 not self.config.include_symlinks
-                and self.config.root.name not in file.parts
+                and self.config.root.name not in file.resolve().parts
             ):
                 add_to_ignored(file, file_extension)
                 continue

@@ -1,0 +1,11 @@
+{
+  "verbose": true,
+  "include-gitignore": true,
+  "include-dotfiles": true,
+  "include-symlinks": true,
+  "include-images": true,
+  "resolve-paths": true,
+  "model": "gpt-4o",
+  "json": "out2.json"
+
+}
