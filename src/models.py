@@ -155,7 +155,17 @@ class TokenCounter:
         }
 
     def _to_text(self) -> str:
-        result: str = "totals:\n"
+        result: str = ""
+        if self.config.is_verbose:
+            result += "ignored:\n"
+            for extension, ignored in self.ignored_files.items():
+                result += "=========================\n"
+                result += f"{extension} files ignored:\n"
+                result += "*************************\n"
+                for file in ignored:
+                    result += f"{str(file)}\n"
+            result += "=========================\n"
+        result += "totals:\n"
         for extension, file_extension in self.scanned_files.items():
             result += "-------------------------\n"
             result += f"{extension} tokens:\n"
