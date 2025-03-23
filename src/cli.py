@@ -101,11 +101,6 @@ class CLI:
             help="save the results of the scan to a json file",
         )
         output_type_group.add_argument(
-            "--markdown",
-            action="store_true",
-            help="save the results of the scan to a markdown file",
-        )
-        output_type_group.add_argument(
             "--html",
             action="store_true",
             help="save the results of the scan to a HTML file",
@@ -133,12 +128,17 @@ class CLI:
         else:
             conf = dict()
 
-        output_format = "txt"
+        if self.args.json:
+            output_format = "json"
+        elif self.args.markdown:
+            output_format = "md"
+        elif self.args.html:
+            output_format = "html"
+        else:
+            output_format = "txt"
         for arg, value in vars(self.args).items():
             if arg == "config" or arg in conf.keys():
                 continue
-            if arg == "json" or "markdown" or "html":
-                output_format = arg
             conf[arg] = value
 
         if conf["exclude"] and conf["include"]:

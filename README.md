@@ -38,7 +38,6 @@ a filename such as `out.json`. To save the file in a structured output,
 pass one of the corresponding flags:
 
 - `--json`
-- `--markdown`
 - `--html`
 
 DDT ignores dotfiles (e.g. `.env` files and the `.git`
