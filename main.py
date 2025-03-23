@@ -26,6 +26,8 @@ def main() -> None:
 
     print("Parsing files...\n")
 
+    token_counter.parse_files()
+
     print("\nParsing complete!")
     logging.print_with_separator("ignored:", sep="=")
     if config.is_verbose:
