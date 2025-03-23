@@ -175,4 +175,4 @@ cython_debug/
 
 # output file types
 *.json
-!default_config.json
+!config.json
