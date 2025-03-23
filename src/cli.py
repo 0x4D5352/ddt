@@ -2,6 +2,7 @@ from pathlib import Path
 from sys import exit as sysexit
 import json
 import argparse
+import sys
 from . import models
 
 
@@ -33,7 +34,7 @@ class CLI:
             "--config",
             action="store",
             help="Load one or more configurations from a file. Unset configs will use defaults.",
-            type=Path,
+            type=argparse.FileType(mode="r", encoding="UTF-8"),
         )
         parser.add_argument(
             "-v",
@@ -85,21 +86,38 @@ class CLI:
         )
 
         parser.add_argument(
-            "-j",
-            "--json",
+            "-o",
+            "--output",
             action="store",
-            help="save the results of the scan to a json file at the location specified. does not include stdout messages.",
-            type=Path,
+            help="redirect output from STDOUT to a file at the location specified.",
+            type=argparse.FileType(mode="w", encoding="UTF-8"),
         )
 
-        file_types_group = parser.add_mutually_exclusive_group()
-        file_types_group.add_argument(
+        output_type_group = parser.add_mutually_exclusive_group()
+        output_type_group.add_argument(
+            "--json",
+            action="store_true",
+            help="save the results of the scan to a json file",
+        )
+        output_type_group.add_argument(
+            "--markdown",
+            action="store_true",
+            help="save the results of the scan to a markdown file",
+        )
+        output_type_group.add_argument(
+            "--html",
+            action="store_true",
+            help="save the results of the scan to a HTML file",
+        )
+
+        input_filter_group = parser.add_mutually_exclusive_group()
+        input_filter_group.add_argument(
             "--exclude",
             action="append",
             help="specify file formats to ignore from counting. this flag may be set multiple times for multiple entries. cannot be set if including files",
             type=str,
         )
-        file_types_group.add_argument(
+        input_filter_group.add_argument(
             "--include",
             action="append",
             help="specify file formats to include when counting. this flag may be set multiple times for multiple entries. cannot be set if excluding files",
@@ -114,19 +132,27 @@ class CLI:
         else:
             conf = dict()
 
+        output_format = "txt"
         for arg, value in vars(self.args).items():
             if arg == "config" or arg in conf.keys():
                 continue
+            if arg == "json" or "markdown" or "html":
+                output_format = arg
             conf[arg] = value
 
-        if len(conf["exclude"]) > 0 and len(conf["include"]) > 0:
+        if conf["exclude"] and conf["include"]:
             print(
                 "error: both inclusions and exclusions found. please remove one group"
             )
             sysexit(1)
 
+        root = conf["directory"].resolve()
+        if not root.is_dir():
+            print("ERROR: Path Provided Is Not A Directory")
+            sysexit(1)
+
         cfg = models.Config(
-            root=conf["directory"].resolve(),
+            root=root,
             is_verbose=conf["verbose"],
             include_gitignore=conf["include_gitignore"],
             include_dotfiles=conf["include_dotfiles"],
@@ -134,9 +160,8 @@ class CLI:
             include_images=conf["include_images"],
             resolve_paths=conf["resolve_paths"],
             model=conf["model"],
-            json_destination=Path(conf["json"]).resolve()
-            if len(conf["json"]) > 0
-            else None,
+            output=conf["output"] if conf["output"] else sys.stdout,
+            output_format=output_format,
             exclude=conf["exclude"],
             include=conf["include"],
         )

@@ -1,6 +1,7 @@
 import mimetypes
 from pathlib import Path
-from typing import NewType, Any
+from typing import NewType, Any, TextIO
+from dataclasses import dataclass, field
 from . import tokenizer, logging
 from PIL import Image
 import json
@@ -22,33 +23,24 @@ Config model
 """
 
 
+@dataclass
 class Config:
-    def __init__(
-        self,
-        root: Path,
-        is_verbose: bool,
-        include_gitignore: bool,
-        include_dotfiles: bool,
-        include_symlinks: bool,
-        include_images: bool,
-        resolve_paths: bool,
-        model: Model,
-        json_destination: Path | None,
-        exclude: list[str],
-        include: list[str],
-    ):
-        self.root: Path = root
-        self.is_verbose: bool = is_verbose
-        self.include_gitignore: bool = include_gitignore
-        self.include_dotfiles: bool = include_dotfiles
-        self.include_symlinks: bool = include_symlinks
-        self.include_images: bool = include_images
-        self.resolve_paths: bool = resolve_paths
-        self.model: Model = model
-        self.json_destination: Path | None = json_destination
-        self.exclude: list[str] = exclude
-        self.include: list[str] = include
-        self.gitignore: set[Path] = self.parse_gitignore()
+    root: Path
+    is_verbose: bool
+    include_gitignore: bool
+    include_dotfiles: bool
+    include_symlinks: bool
+    include_images: bool
+    resolve_paths: bool
+    model: Model
+    output: TextIO
+    output_format: str
+    exclude: list[str]
+    include: list[str]
+    gitignore: set[Path] = field(init=False)
+
+    def __post_init__(self):
+        self.gitignore = self.parse_gitignore()
 
     # AI rewrote this function for me, need to replace.
     def parse_gitignore(self) -> set[Path]:
@@ -148,7 +140,7 @@ class TokenCounter:
         self.included_files: set[Path] = set()
         self.total: int = 0
 
-    def _to_dict(self):
+    def _to_dict(self) -> dict[str, Any]:
         return {
             "root": str(self.config.root),
             "all_files": [path.name for path in self.all_files],
@@ -161,6 +153,27 @@ class TokenCounter:
             },
             "total": self.total,
         }
+
+    def _to_text(self) -> str:
+        result: str = "totals:\n"
+        result += "-------------------------\n"
+        for extension, file_extension in self.scanned_files.items():
+            result += f"{extension} tokens:\n"
+            result += "*************************\n"
+            for file in file_extension.files:
+                result += f"{file['file']}: {file['tokens']:,} tokens\n"
+            result += ".........................\n"
+            result += (
+                f"{file_extension.extension} total: {file_extension.total:,} tokens\n"
+            )
+            result += "_________________________\n"
+
+        result += "-------------------------\n"
+        result += f"grand total: {self.total:,}\n"
+        result += (
+            f"remaining tokens given 128K context window: {128_000 - self.total:,}\n"
+        )
+        return result
 
     def add_exclusions(self, exclusions: list[str]) -> None:
         if exclusions is None or len(exclusions) < 1:
@@ -280,12 +293,16 @@ class TokenCounter:
             result += suffix
         return result
 
-    def output_as_json(self) -> None:
-        if not self.config.json_destination:
+    def output(self) -> None:
+        if not self.config.output:
             print("how did you get past the guard clause when calling this")
             return
-        with self.config.json_destination.open("w") as f:
-            json.dump(self, f, cls=TokenEncoder, indent=2)
+        with self.config.output as f:
+            match self.config.output_format:
+                case "json":
+                    json.dump(self, f, cls=TokenEncoder, indent=2)
+                case _:
+                    f.write(self._to_text())
 
 
 class FileCategory:
