@@ -7,9 +7,8 @@ Main function
 
 
 def main() -> None:
-    print("Hello from tokenizer!")
-
     config = cli.CLI().generate_config()
+    logging.print_if_verbose("Hello from tokenizer!", config.is_verbose)
 
     if not config.root:
         print("ERROR: No Directory Provided")
@@ -24,13 +23,13 @@ def main() -> None:
     token_counter.add_exclusions(config.exclude)
     token_counter.add_inclusions(config.include)
 
-    print("Parsing files...\n")
+    logging.print_if_verbose("Parsing files...", token_counter.config.is_verbose)
 
     token_counter.parse_files()
 
-    print("\nParsing complete!")
-    logging.print_with_separator("ignored:", sep="=")
+    logging.print_if_verbose("Parsing complete!", token_counter.config.is_verbose)
     if config.is_verbose:
+        logging.print_with_separator("ignored:", sep="=")
         for extension, ignored in token_counter.ignored_files.items():
             logging.print_with_separator(f"{extension} files ignored:", sep="*")
             for file in ignored:

@@ -119,7 +119,7 @@ class CLI:
             conf[arg] = value
 
         cfg = models.Config(
-            root=conf["directory"],
+            root=conf["directory"].resolve(),
             is_verbose=conf["verbose"],
             include_gitignore=conf["include_gitignore"],
             include_dotfiles=conf["include_dotfiles"],

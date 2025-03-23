@@ -176,7 +176,9 @@ class TokenCounter:
             if file_extension not in self.ignored_files:
                 self.ignored_files[file_extension] = []
             self.ignored_files[file_extension].append(file)
-            print(f"file {file.name} hit unicode error, ignoring")
+            logging.print_if_verbose(
+                f"file {file.name} hit unicode error, ignoring", self.config.is_verbose
+            )
             return 0
         return tokenizer.calculate_text_tokens(text, self.config.model)
 
@@ -188,7 +190,9 @@ class TokenCounter:
             if file_extension not in self.ignored_files:
                 self.ignored_files[file_extension] = []
             self.ignored_files[file_extension].append(file)
-            print(f"file {file.name} hit error {e}, ignoring")
+            logging.print_if_verbose(
+                f"file {file.name} hit error {e}, ignoring", self.config.is_verbose
+            )
             return 0
 
     def parse_files(self):
@@ -202,7 +206,6 @@ class TokenCounter:
                 if file_extension in mimetypes.types_map
                 else None
             )
-            print(f"mime from map: {mime}")
 
             def add_to_ignored(file: Path, filetype: str):
                 logging.print_if_verbose(
@@ -213,24 +216,20 @@ class TokenCounter:
                 self.ignored_files[filetype].append(file)
 
             if len(self.included_files) > 0 and file not in self.included_files:
-                print("included skip")
                 add_to_ignored(file, file_extension)
                 continue
 
             if len(self.excluded_files) > 0 and file in self.excluded_files:
-                print("excluded skip")
                 add_to_ignored(file, file_extension)
                 continue
 
             if not self.config.include_dotfiles and any(
                 part.startswith(".") for part in file.parts
             ):
-                print("dotfile skip")
                 add_to_ignored(file, file_extension)
                 continue
 
             if not self.config.include_gitignore and file in self.config.gitignore:
-                print("gitignore skip")
                 add_to_ignored(file, file_extension)
                 continue
 
@@ -238,29 +237,24 @@ class TokenCounter:
                 not self.config.include_symlinks
                 and self.config.root.name not in file.parts
             ):
-                print("symlink skip")
                 add_to_ignored(file, file_extension)
                 continue
 
             logging.print_if_verbose(f"reading {str(file)}", self.config.is_verbose)
 
             if mime:
-                print(f"mime check!!! {mime}")
                 category = mime.split("/")[0]
                 match category:
                     case "image":
                         if self.config.include_images:
-                            print("checking image")
                             token_counts = self.count_image_file(file, file_extension)
                         else:
                             # TODO: replace with just ignoring the file straight up
                             token_counts = self.count_text_file(file, file_extension)
                     case _:
                         # currently assuming everything is a text file if it's not an image
-                        print("checking text")
                         token_counts = self.count_text_file(file, file_extension)
             else:
-                print("checking unknown")
                 token_counts = self.count_text_file(file, file_extension)
 
             if file in self.ignored_files:
