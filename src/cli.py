@@ -91,6 +91,7 @@ class CLI:
             action="store",
             help="redirect output from STDOUT to a file at the location specified.",
             type=argparse.FileType(mode="w", encoding="UTF-8"),
+            default=sys.stdout,
         )
 
         output_type_group = parser.add_mutually_exclusive_group()
@@ -160,7 +161,7 @@ class CLI:
             include_images=conf["include_images"],
             resolve_paths=conf["resolve_paths"],
             model=conf["model"],
-            output=conf["output"] if conf["output"] else sys.stdout,
+            output=conf["output"],
             output_format=output_format,
             exclude=conf["exclude"],
             include=conf["include"],

@@ -156,8 +156,8 @@ class TokenCounter:
 
     def _to_text(self) -> str:
         result: str = "totals:\n"
-        result += "-------------------------\n"
         for extension, file_extension in self.scanned_files.items():
+            result += "-------------------------\n"
             result += f"{extension} tokens:\n"
             result += "*************************\n"
             for file in file_extension.files:
@@ -166,7 +166,6 @@ class TokenCounter:
             result += (
                 f"{file_extension.extension} total: {file_extension.total:,} tokens\n"
             )
-            result += "_________________________\n"
 
         result += "-------------------------\n"
         result += f"grand total: {self.total:,}\n"
