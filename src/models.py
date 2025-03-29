@@ -4,6 +4,7 @@ from typing import NewType, Any, TextIO
 from dataclasses import dataclass, field
 from . import tokenizer, logging
 from PIL import Image
+from jinja2 import Environment, PackageLoader, select_autoescape
 import json
 
 """
@@ -183,9 +184,13 @@ class TokenCounter:
         return result
 
     def _to_html(self) -> str:
-        result: str = """
-<!DOCTYPE html>
-            """
+        env = Environment(loader=PackageLoader("ddt"), autoescape=select_autoescape())
+        template = env.get_template("template.html")
+        values: dict = {
+            "directory": self.config.root,
+            "verbose": self.config.is_verbose,
+        }
+        result: str = template.render(values)
         return result
 
     def add_exclusions(self, exclusions: list[str]) -> None:
@@ -314,6 +319,8 @@ class TokenCounter:
             match self.config.output_format:
                 case "json":
                     json.dump(self, f, cls=TokenEncoder, indent=2)
+                case "html":
+                    f.write(self._to_html())
                 case _:
                     f.write(self._to_text())
 

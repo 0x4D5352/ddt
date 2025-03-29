@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Directory Diving Tokenizer: {{ directory }}</title>
+	</head>
+	<body>
+		{% if verbose %}
+		<table>
+			<caption>
+				Ignored files in {{ directory }}
+			</caption>
+			<thead>
+				<th scope="col">File</th>
+				<th scope="col">Reason</th>
+			</thead>
+			{# TODO: add iteration through ignored files list #}
+		</table>
+		{% endif %}
+		<table>
+			<caption>
+				Scanned files in {{ directory }}
+			</caption>
+			<thead>
+				<th scope="col">File</th>
+				<th scope="col">Token Count</th>
+			</thead>
+			{# TODO: add iteration through scanned files list #}
+		</table>
+	</body>
+</html>

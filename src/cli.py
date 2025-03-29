@@ -130,8 +130,6 @@ class CLI:
 
         if self.args.json:
             output_format = "json"
-        elif self.args.markdown:
-            output_format = "md"
         elif self.args.html:
             output_format = "html"
         else:
