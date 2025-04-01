@@ -4,6 +4,49 @@
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>Directory Diving Tokenizer: {{ directory }}</title>
+		<style>
+			table {
+				border-collapse: collapse;
+					border: 2px solid rgb(140 140 140);
+					font-family: sans-serif;
+					font-size: 0.8rem;
+					letter-spacing: 1px;
+			}
+
+			caption {
+				caption-side: bottom;
+				padding: 10px;
+				font-weight: bold;
+			}
+
+			thead,
+			tfoot {
+				background-color: rgb(228 240 245);
+			}
+
+			th,
+			td {
+				border: 1px solid rgb(160 160 160);
+				padding: 8px 10px;
+			}
+
+			td:last-of-type {
+				text-align: center;
+			}
+
+			tbody > tr:nth-of-type(even) {
+				background-color: rgb(237 238 242);
+			}
+
+			tfoot th {
+				text-align: right;
+			}
+
+			tfoot td {
+				font-weight: bold;
+			}
+
+		</style>
 	</head>
 	<body>
 		{% if verbose %}
@@ -26,7 +69,28 @@
 				<th scope="col">File</th>
 				<th scope="col">Token Count</th>
 			</thead>
-			{# TODO: add iteration through scanned files list #}
+			<tbody>
+			{% for extension, file_category in scanned_files.items() %}
+				<tr>
+					<th scope="row" colspan="2">{{ extension }} </th>
+				</tr>
+			{% for file in file_category.files %}
+				<tr>
+					<td>{{ file.file }}</td>
+					<td>{{ "{:,}".format(file.tokens) }}</td>
+			{% endfor %}
+				<tr>
+					<td><b>{{ extension }} total</b></td>
+					<td>{{ "{:,}".format(file_category.total) }}</td>
+				</tr>
+			{% endfor %}
+			</tbody>
+			<tfoot>
+				<tr>
+					<th scope="row">Grand Total</th>
+					<td>{{ "{:,}".format(total) }}</td>
+				</tr>
+			</tfoot>
 		</table>
 	</body>
 </html>

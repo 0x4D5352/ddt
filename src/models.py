@@ -189,6 +189,9 @@ class TokenCounter:
         values: dict = {
             "directory": self.config.root,
             "verbose": self.config.is_verbose,
+            "ignored_files": self.ignored_files,
+            "scanned_files": self.scanned_files,
+            "total": self.total,
         }
         result: str = template.render(values)
         return result
