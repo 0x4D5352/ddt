@@ -176,3 +176,6 @@ cython_debug/
 # output file types
 *.json
 !config.json
+
+# detritus
+.DS_Store
