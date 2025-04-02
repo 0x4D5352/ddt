@@ -6,7 +6,7 @@
   "include-images": false,
   "resolve-paths": false,
   "model": "gpt-4o",
-  "json": "",
+  "output": "",
   "include": [],
   "exclude": []
 }
