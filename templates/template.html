@@ -49,18 +49,6 @@
 		</style>
 	</head>
 	<body>
-		{% if verbose %}
-		<table>
-			<caption>
-				Ignored files in {{ directory }}
-			</caption>
-			<thead>
-				<th scope="col">File</th>
-				<th scope="col">Reason</th>
-			</thead>
-			{# TODO: add iteration through ignored files list #}
-		</table>
-		{% endif %}
 		<table>
 			<caption>
 				Scanned files in {{ directory }}
@@ -92,5 +80,33 @@
 				</tr>
 			</tfoot>
 		</table>
+		{% if verbose %}
+		<table>
+			<caption>
+				Ignored files in {{ directory }}
+			</caption>
+			<thead>
+				<th scope="col">File</th>
+				<!-- <th scope="col">Reason</th> -->
+			</thead>
+			<tbody>
+			{% for extension, file_category in ignored_files.items() %}
+				<tr>
+					{% if extension == "" %}
+					<th scope="row" colspan="2">misc</th>
+					{% else %}
+					<th scope="row" colspan="2">{{ extension }} </th>
+					{% endif %}
+					
+				</tr>
+			{% for file in file_category %}
+				<tr>
+					<td>{{ file }}</td>
+					{# <td>{{ "{:,}".format(file.tokens) }}</td> #}
+			{% endfor %}
+			{% endfor %}
+			</tbody>
+		</table>
+		{% endif %}
 	</body>
 </html>
