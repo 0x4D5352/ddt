@@ -15,14 +15,14 @@ To install DDT, clone this repo and choose the easy path or the hard path:
 
 1. Install [uv](https://docs.astral.sh/uv/getting-started/installation/), the
 python package and project manager.
-2. Run `uv run main.py /PATH/TO/TARGET`
+2. Run `uv run ddt.py /PATH/TO/TARGET`
 
 ### The Hard Path
 
 1. Set up a python virtual environment with `python3 -m venv .venv`
 2. Enter the virtual environment with `source .venv/bin/activate`
-3. Run `python -m pip install -r pyproject.toml`
-4. Run `python main.py /PATH/TO/TARGET`
+3. Run `python -m pip install -e .`
+4. Run `python ddt.py /PATH/TO/TARGET`
 5. Remember to run `exit` when you're done to leave the python venv!
 
 ### Command Line Flags

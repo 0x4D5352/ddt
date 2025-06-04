@@ -43,7 +43,7 @@ class Config:
 
     # AI rewrote this function for me, need to replace.
     def parse_gitignore(self) -> set[Path]:
-        # TODO: implement https://github.com/cpburnz/python-pathspec for gitignore and rewrite from scratch
+        # TODO: implement https://github.com/cpburnz/python-pathspec for gitignore and rewrite from scratch. or maybe its fine to just keep?
         """
         Reads the .gitignore file in the given root directory, interprets its patterns,
         and returns a set of Paths representing all files and directories within root that match
@@ -329,6 +329,19 @@ class TokenCounter:
 
 
 class FileCategory:
+    """
+    A class representing a particular type of file, like a .txt or .yaml.
+
+    Args:
+    extension: str - The file extension, e.g. .txt
+
+    Attributes:
+    extension: str - The file extension, e.g. .txt
+    files: list[dict[str, str | int]] - The files, with the structure {"file": str, "tokens": int}
+    tital: int - the total number of tokens in this file category.
+
+    """
+
     def __init__(self, extension: str) -> None:
         self.extension: str = extension
         self.files: list[dict[str, str | int]] = []

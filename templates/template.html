@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<title>Directory Diving Tokenizer: {{ directory }}</title>
-		<style>
-			table {
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Directory Diving Tokenizer: {{ directory }}</title>
+    <style>
+      table {
 				border-collapse: collapse;
 					border: 2px solid rgb(140 140 140);
 					font-family: sans-serif;
@@ -45,52 +45,70 @@
 			tfoot td {
 				font-weight: bold;
 			}
-
-		</style>
-	</head>
-	<body>
-		{% if verbose %}
-		<table>
-			<caption>
-				Ignored files in {{ directory }}
-			</caption>
-			<thead>
-				<th scope="col">File</th>
-				<th scope="col">Reason</th>
-			</thead>
-			{# TODO: add iteration through ignored files list #}
-		</table>
-		{% endif %}
-		<table>
-			<caption>
-				Scanned files in {{ directory }}
-			</caption>
-			<thead>
-				<th scope="col">File</th>
-				<th scope="col">Token Count</th>
-			</thead>
-			<tbody>
-			{% for extension, file_category in scanned_files.items() %}
-				<tr>
-					<th scope="row" colspan="2">{{ extension }} </th>
-				</tr>
-			{% for file in file_category.files %}
-				<tr>
-					<td>{{ file.file }}</td>
-					<td>{{ "{:,}".format(file.tokens) }}</td>
+    </style>
+  </head>
+  <body>
+    <table>
+      <caption>
+        Scanned files in {{ directory }}
+      </caption>
+      <thead>
+        <th scope="col">File</th>
+        <th scope="col">Token Count</th>
+      </thead>
+      <tbody>
+        {% for extension, file_category in scanned_files.items() %}
+        <tr>
+          <th scope="row" colspan="2">{{ extension }}</th>
+        </tr>
+        {% for file in file_category.files %}
+        <tr>
+          <td>{{ file.file }}</td>
+          <td>{{ "{:,}".format(file.tokens) }}</td>
+        </tr>
+        {% endfor %}
+        <tr>
+          <td><b>{{ extension }} total</b></td>
+          <td>{{ "{:,}".format(file_category.total) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr>
+          <th scope="row">Grand Total</th>
+          <td>{{ "{:,}".format(total) }}</td>
+        </tr>
+      </tfoot>
+    </table>
+    {% if verbose %}
+    <table>
+      <caption>
+        Ignored files in {{ directory }}
+      </caption>
+      <thead>
+        <th scope="col">File</th>
+        <!-- <th scope="col">Reason</th> -->
+      </thead>
+      <tbody>
+        {% for extension, file_category in ignored_files.items() %}
+        <tr>
+          {% if extension == "" %}
+          <th scope="row" colspan="2">misc</th>
+          {% else %}
+          <th scope="row" colspan="2">{{ extension }}</th>
+          {% endif %}
+        </tr>
+        {% for file in file_category %}
+        <tr>
+          <td>{{ file }}</td>
+          {#
+          <td>{{ "{:,}".format(file.tokens) }}</td>
+          #}
+        </tr>
+        {% endfor %}
 			{% endfor %}
-				<tr>
-					<td><b>{{ extension }} total</b></td>
-					<td>{{ "{:,}".format(file_category.total) }}</td>
-				</tr>
-			{% endfor %}
-			</tbody>
-			<tfoot>
-				<tr>
-					<th scope="row">Grand Total</th>
-					<td>{{ "{:,}".format(total) }}</td>
-				</tr>
-			</tfoot>
-		</table>
-	</body>
+      </tbody>
+    </table>
+    {% endif %}
+  </body>
 </html>
