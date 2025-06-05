@@ -11,7 +11,7 @@ CLI Arg Parser
 """
 
 
-class CLI:
+class Parser:
     def __init__(self) -> None:
         parser = self.setup_argparse()
         self.args = parser.parse_args()
