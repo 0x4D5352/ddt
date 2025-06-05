@@ -3,6 +3,7 @@ from sys import exit as sysexit
 import json
 import argparse
 import sys
+import logging
 from . import models
 
 
@@ -11,10 +12,12 @@ CLI Arg Parser
 """
 
 
-class CLI:
+class Parser:
     def __init__(self) -> None:
         parser = self.setup_argparse()
         self.args = parser.parse_args()
+        level = logging.DEBUG if self.args.verbose else logging.INFO
+        logging.basicConfig(format='%(message)s', level=level)
 
     def setup_argparse(self) -> argparse.ArgumentParser:
         parser = argparse.ArgumentParser(

@@ -6,6 +6,8 @@ from math import ceil
 Tokenizing methods
 """
 
+def get_models():
+    return [key for key in tiktoken.model.MODEL_TO_ENCODING.keys()]
 
 def calculate_text_tokens(string: str, model_name: str) -> int:
     """Returns the number of tokens in a text string"""
@@ -42,3 +44,7 @@ def calculate_image_tokens(width: int, height: int) -> int:
     total_tokens = 85 + 170 * (tiles_width * tiles_height)
 
     return total_tokens
+
+
+if __name__ == "__main__":
+    print(get_models())
