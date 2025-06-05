@@ -1,4 +1,5 @@
-from src import cli, models
+import logging
+from src import parser, models
 
 """
 Main function
@@ -6,15 +7,17 @@ Main function
 
 
 def main() -> None:
-    config = cli.Parser().generate_config()
+    config = parser.Parser().generate_config()
 
     token_counter = models.TokenCounter(config)
     token_counter.add_exclusions(config.exclude)
     token_counter.add_inclusions(config.include)
 
+    logging.debug("Parsing files...")
 
     token_counter.parse_files()
 
+    logging.debug("Parsing complete!")
 
     token_counter.output()
 

@@ -1,4 +1,5 @@
 import mimetypes
+import logging
 from pathlib import Path
 from typing import NewType, Any, TextIO
 from dataclasses import dataclass, field
@@ -215,8 +216,7 @@ class TokenCounter:
             if file_extension not in self.ignored_files:
                 self.ignored_files[file_extension] = []
             self.ignored_files[file_extension].append(file)
-            # old_logging.print_if_verbose(
-            #     f"file {file.name} hit unicode error, ignoring", self.config.is_verbose
+            logging.debug(f"file {file.name} hit unicode error, ignoring")
             # )
             return 0
         return tokenizer.calculate_text_tokens(text, self.config.model)
@@ -236,7 +236,7 @@ class TokenCounter:
 
     def parse_files(self):
         for file in self.all_files:
-            # old_logging.print_if_verbose(f"checking {str(file)}", self.config.is_verbose)
+            logging.debug(f"checking {str(file)}")
             if file.is_dir():
                 continue
             file_extension = self.grab_suffix(file)
@@ -247,9 +247,7 @@ class TokenCounter:
             )
 
             def add_to_ignored(file: Path, filetype: str):
-                # old_logging.print_if_verbose(
-                #     f"ignoring {str(file)}", self.config.is_verbose
-                # )
+                logging.debug(f"ignoring {str(file)}")
                 if filetype not in self.ignored_files:
                     self.ignored_files[filetype] = []
                 self.ignored_files[filetype].append(file)
@@ -279,7 +277,7 @@ class TokenCounter:
                 add_to_ignored(file, file_extension)
                 continue
 
-            # old_logging.print_if_verbose(f"reading {str(file)}", self.config.is_verbose)
+            logging.debug(f"reading {str(file)}")
 
             if mime:
                 category = mime.split("/")[0]
