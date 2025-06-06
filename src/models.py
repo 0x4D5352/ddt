@@ -311,9 +311,7 @@ class TokenCounter:
         return result
 
     def output(self) -> None:
-        if not self.config.output:
-            print("how did you get past the guard clause when calling this")
-            return
+        assert self.config.output
         with self.config.output as f:
             match self.config.output_format:
                 case "json":
