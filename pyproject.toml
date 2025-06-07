@@ -11,13 +11,13 @@ dependencies = [
     "tiktoken>=0.9.0",
 ]
 
-[build-system]
-requires = ["hatchling >= 1.26"]
-build-backend = "hatchling.build"
+# [build-system]
+# requires = ["hatchling >= 1.26"]
+# build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
-    "hatchling>=1.27.0",
+    # "hatchling>=1.27.0",
     "pytest>=8.4.0",
 ]
 
