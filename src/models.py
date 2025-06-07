@@ -318,6 +318,11 @@ class TokenCounter:
                 case _:
                     f.write(self._to_text())
 
+class TokenEncoder(json.JSONEncoder):
+    def default(self, o: Any) -> Any:
+        if isinstance(o, TokenCounter) or isinstance(o, FileCategory):
+            return o._to_dict()
+        return super().default(o)
 
 class FileCategory:
     """
@@ -345,8 +350,3 @@ class FileCategory:
         }
 
 
-class TokenEncoder(json.JSONEncoder):
-    def default(self, o: Any) -> Any:
-        if isinstance(o, TokenCounter) or isinstance(o, FileCategory):
-            return o._to_dict()
-        return super().default(o)
