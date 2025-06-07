@@ -217,7 +217,6 @@ class TokenCounter:
                 self.ignored_files[file_extension] = []
             self.ignored_files[file_extension].append(file)
             logging.debug(f"file {file.name} hit unicode error, ignoring")
-            # )
             return 0
         return tokenizer.calculate_text_tokens(text, self.config.model)
 
@@ -225,13 +224,11 @@ class TokenCounter:
         try:
             img = Image.open(file)
             return tokenizer.calculate_image_tokens(*img.size)
-        except Exception:
+        except Exception as e:
             if file_extension not in self.ignored_files:
                 self.ignored_files[file_extension] = []
             self.ignored_files[file_extension].append(file)
-            # old_logging.print_if_verbose(
-            #     f"file {file.name} hit error {e}, ignoring", self.config.is_verbose
-            # )
+            logging.debug(f"file {file.name} hit error {e}, ignoring")
             return 0
 
     def parse_files(self):
