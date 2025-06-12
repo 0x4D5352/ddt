@@ -29,6 +29,8 @@ def new_calculate_image_tokens(width: int, height: int) -> int:
 
 # TODO: update with more up to date checks for models
 def old_calculate_image_tokens(width: int, height: int) -> int:
+    # below is only valid for the following models:
+    # 4o, 4.1, 4.5
     # Step 1: scale to fit within a 2048 x 2048 square (maintain aspect ratio)
     if width > 2048 or height > 2048:
         aspect_ratio = width / height

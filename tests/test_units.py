@@ -98,9 +98,12 @@
     Tokenizer
 """
 
+from ddt import tokenizer
+
 # get_models
 
 # calculate_text_tokens
+
 
 # calculate_image_tokens
 
@@ -109,5 +112,12 @@
 # - Pass image size to function
 # - ALTERNATIVELY: dig into original docs and validate
 
+
 def test_calculate_image_tokens():
-    pass
+    KNOWN_IMAGE_TOKENS = [
+        {"width": 1024, "height": 1024, "total": 765},
+        {"width": 2048, "height": 4096, "total": 1105},
+    ]
+
+    for case in KNOWN_IMAGE_TOKENS:
+        assert tokenizer.calculate_image_tokens(case["width"],case["height"]) == case["total"]
