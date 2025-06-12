@@ -7,7 +7,7 @@ Main function
 
 
 def main() -> None:
-    config = parser.Parser().generate_config()
+    config = parser.CLIParser().generate_config()
 
     token_counter = models.TokenCounter(config)
     token_counter.add_exclusions(config.exclude)

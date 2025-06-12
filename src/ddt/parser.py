@@ -12,7 +12,7 @@ CLI Arg Parser
 """
 
 
-class Parser:
+class CLIParser:
     def __init__(self) -> None:
         parser = self.setup_argparse()
         self.args = parser.parse_args()
