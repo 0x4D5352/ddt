@@ -1,5 +1,5 @@
 import logging
-from . import parser, models
+from src.ddt import parser, models
 
 """
 Main function

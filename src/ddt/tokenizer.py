@@ -1,4 +1,3 @@
-import logging
 import tiktoken
 from math import ceil
 
@@ -17,18 +16,19 @@ def calculate_text_tokens(string: str, model_name: str) -> int:
     return num_tokens
 
 # TODO: add switch statement for strategies old and new
-def calculate_image_tokens(width: int, height: int, model_name: str="TODO: fix me") -> int:
-    logging.debug(f"calculating tokens for {model_name}")
-    return old_calculate_image_tokens(width,height)
-
-def new_calculate_image_tokens(width: int, height: int) -> int:
-    logging.debug(f"calculating tokens for {width} x {height}")
-    raise NotImplementedError
+# def calculate_image_tokens(width: int, height: int, model_name: str="TODO: fix me") -> int:
+#     logging.debug(f"calculating tokens for {model_name}")
+#     return old_calculate_image_tokens(width,height)
+#
+# def new_calculate_image_tokens(width: int, height: int) -> int:
+#     logging.debug(f"calculating tokens for {width} x {height}")
+#     raise NotImplementedError
 
 # Source for original image token code: https://medium.com/@teekaifeng/gpt4o-visual-tokenizer-an-illustration-c69695dd4a39
 
 # TODO: update with more up to date checks for models
-def old_calculate_image_tokens(width: int, height: int) -> int:
+# def old_calculate_image_tokens(width: int, height: int) -> int:
+def calculate_image_tokens(width: int, height: int) -> int:
     # below is only valid for the following models:
     # 4o, 4.1, 4.5
     # Step 1: scale to fit within a 2048 x 2048 square (maintain aspect ratio)
