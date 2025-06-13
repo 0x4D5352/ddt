@@ -231,6 +231,12 @@ class TokenCounter:
             logging.debug(f"file {file.name} hit error {e}, ignoring")
             return 0
 
+    def add_to_ignored(self, file: Path, filetype: str):
+        logging.debug(f"ignoring {str(file)}")
+        if filetype not in self.ignored_files:
+            self.ignored_files[filetype] = []
+        self.ignored_files[filetype].append(file)
+
     def parse_files(self):
         for file in self.all_files:
             logging.debug(f"checking {str(file)}")
@@ -243,35 +249,30 @@ class TokenCounter:
                 else None
             )
 
-            def add_to_ignored(file: Path, filetype: str):
-                logging.debug(f"ignoring {str(file)}")
-                if filetype not in self.ignored_files:
-                    self.ignored_files[filetype] = []
-                self.ignored_files[filetype].append(file)
 
             if len(self.included_files) > 0 and file not in self.included_files:
-                add_to_ignored(file, file_extension)
+                self.add_to_ignored(file, file_extension)
                 continue
 
             if len(self.excluded_files) > 0 and file in self.excluded_files:
-                add_to_ignored(file, file_extension)
+                self.add_to_ignored(file, file_extension)
                 continue
 
             if not self.config.include_dotfiles and any(
                 part.startswith(".") for part in file.parts
             ):
-                add_to_ignored(file, file_extension)
+                self.add_to_ignored(file, file_extension)
                 continue
 
             if not self.config.include_gitignore and file in self.config.gitignore:
-                add_to_ignored(file, file_extension)
+                self.add_to_ignored(file, file_extension)
                 continue
 
             if (
                 not self.config.include_symlinks
                 and self.config.root.name not in file.resolve().parts
             ):
-                add_to_ignored(file, file_extension)
+                self.add_to_ignored(file, file_extension)
                 continue
 
             logging.debug(f"reading {str(file)}")
@@ -283,7 +284,7 @@ class TokenCounter:
                         if self.config.include_images:
                             token_counts = self.count_image_file(file, file_extension)
                         else:
-                            add_to_ignored(file, file_extension)
+                            self.add_to_ignored(file, file_extension)
                             continue
                     case _:
                         # currently assuming everything is a text file if it's not an image
