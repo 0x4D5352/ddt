@@ -223,7 +223,8 @@ class TokenCounter:
     def count_image_file(self, file: Path, file_extension: str) -> int:
         try:
             img = Image.open(file)
-            return tokenizer.calculate_image_tokens(*img.size)
+            width, height = img.size
+            return tokenizer.calculate_image_tokens(width, height)
         except Exception as e:
             if file_extension not in self.ignored_files:
                 self.ignored_files[file_extension] = []
