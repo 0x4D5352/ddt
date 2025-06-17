@@ -12,7 +12,7 @@ dependencies = [
 ]
 
 [project.scripts]
-ddt = "ddt.cli:main"
+ddt = "ddt.__main__:main"
 
 [build-system]
 requires = ["hatchling >= 1.26"]

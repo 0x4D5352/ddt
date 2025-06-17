@@ -14,8 +14,14 @@ CLI Arg Parser
 
 class CLIParser:
     def __init__(self) -> None:
-        parser = self.setup_argparse()
-        self.args = parser.parse_args()
+        self.parser = self.setup_argparse()
+        self.args = None
+
+    def parse_args(self, argv: list[str] | None = None) -> None:
+        self.args = self.parser.parse_args(argv)
+        self._setup_logging()
+
+    def _setup_logging(self) -> None:
         level = logging.DEBUG if self.args.verbose else logging.INFO
         logging.basicConfig(format='%(message)s', level=level)
 
