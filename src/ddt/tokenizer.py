@@ -1,4 +1,4 @@
-import tiktoken
+from tiktoken import model, encoding_for_model
 from math import ceil
 
 
@@ -7,11 +7,11 @@ Tokenizing methods
 """
 
 def get_models():
-    return [key for key in tiktoken.model.MODEL_TO_ENCODING.keys()]
+    return [key for key in model.MODEL_TO_ENCODING.keys()]
 
 def calculate_text_tokens(string: str, model_name: str) -> int:
     """Returns the number of tokens in a text string"""
-    encoding = tiktoken.encoding_for_model(model_name)
+    encoding = encoding_for_model(model_name)
     num_tokens = len(encoding.encode(string))
     return num_tokens
 
