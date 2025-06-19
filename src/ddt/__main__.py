@@ -9,7 +9,7 @@ Main function
 def main() -> None:
     p = cli.setup_argparse()
     args = p.parse_args()
-    cfg = config.generate_config(args)
+    cfg = config.generate_config(vars(args))
 
     token_counter = models.TokenCounter(cfg)
     token_counter.add_exclusions(cfg.exclude)

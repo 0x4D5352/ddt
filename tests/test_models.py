@@ -24,7 +24,7 @@
 
 # tokencounter parse_files
 
-# tokencounter parse_files-add_to_ignored
+# tokencounter parse_files
 
 # tokencounter grab_suffix
 

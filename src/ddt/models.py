@@ -135,7 +135,7 @@ class TokenCounter:
                 self.included_files.add(file.resolve())
 
     # TODO: remove file_extension, is present within Path.suffix
-    def count_text_file(self, file: Path, file_extension: str) -> int:
+    def count_text_file(self, file: Path) -> int:
         """
         Parses the given text file and return the total number of tokens.
 
@@ -150,14 +150,12 @@ class TokenCounter:
             text = file.read_text()
         except UnicodeDecodeError:
             logging.debug(f"file {file.name} hit unicode error, ignoring")
-            if file_extension not in self.ignored_files:
-                self.ignored_files[file_extension] = []
-            self.ignored_files[file_extension].append(file)
+            self.add_to_ignored(file)
             return 0
         return tokenizer.calculate_text_tokens(text, self.config.model)
 
     # TODO: remove file_extension, is present within Path.suffix
-    def count_image_file(self, file: Path, file_extension: str) -> int:
+    def count_image_file(self, file: Path) -> int:
         """
         Parses the given image file and return the total number of tokens.
 
@@ -174,19 +172,46 @@ class TokenCounter:
             return tokenizer.calculate_image_tokens(width, height)
         except Exception as e:
             logging.debug(f"file {file.name} hit error {e}, ignoring")
-            if file_extension not in self.ignored_files:
-                self.ignored_files[file_extension] = []
-            self.ignored_files[file_extension].append(file)
+            self.add_to_ignored(file)
             return 0
 
-    def add_to_ignored(self, file: Path, filetype: str):
+    def add_to_ignored(self, file: Path):
         """
         Adds the given file to the ignored files list.
         """
+        filetype = self.grab_suffix(file)
         logging.debug(f"ignoring {str(file)}")
         if filetype not in self.ignored_files:
             self.ignored_files[filetype] = []
         self.ignored_files[filetype].append(file)
+
+    def filter_file(self, file: Path) -> bool:
+        if len(self.included_files) > 0 and file not in self.included_files:
+            self.add_to_ignored(file)
+            return True
+
+        if len(self.excluded_files) > 0 and file in self.excluded_files:
+            self.add_to_ignored(file)
+            return True
+
+        if not self.config.include_dotfiles and any(
+            part.startswith(".") for part in file.parts
+        ):
+            self.add_to_ignored(file)
+            return True
+
+        if not self.config.include_gitignore and file in self.config.gitignore:
+            self.add_to_ignored(file)
+            return True
+
+        if (
+            not self.config.include_symlinks
+            and self.config.root.name not in file.resolve().parts
+        ):
+            self.add_to_ignored(file)
+            return True
+
+        return False
 
     def parse_files(self):
         """
@@ -210,29 +235,9 @@ class TokenCounter:
             )
 
 
-            if len(self.included_files) > 0 and file not in self.included_files:
-                self.add_to_ignored(file, file_extension)
-                continue
+            filtered: bool = self.filter_file(file)
 
-            if len(self.excluded_files) > 0 and file in self.excluded_files:
-                self.add_to_ignored(file, file_extension)
-                continue
-
-            if not self.config.include_dotfiles and any(
-                part.startswith(".") for part in file.parts
-            ):
-                self.add_to_ignored(file, file_extension)
-                continue
-
-            if not self.config.include_gitignore and file in self.config.gitignore:
-                self.add_to_ignored(file, file_extension)
-                continue
-
-            if (
-                not self.config.include_symlinks
-                and self.config.root.name not in file.resolve().parts
-            ):
-                self.add_to_ignored(file, file_extension)
+            if filtered:
                 continue
 
             logging.debug(f"reading {str(file)}")
@@ -242,15 +247,15 @@ class TokenCounter:
                 match category:
                     case "image":
                         if self.config.include_images:
-                            token_counts = self.count_image_file(file, file_extension)
+                            token_counts = self.count_image_file(file)
                         else:
-                            self.add_to_ignored(file, file_extension)
+                            self.add_to_ignored(file)
                             continue
                     case _:
                         # currently assuming everything is a text file if it's not an image
-                        token_counts = self.count_text_file(file, file_extension)
+                        token_counts = self.count_text_file(file)
             else:
-                token_counts = self.count_text_file(file, file_extension)
+                token_counts = self.count_text_file(file)
 
             if file_extension not in self.scanned_files:
                 self.scanned_files[file_extension] = FileCategory(file_extension)
@@ -285,13 +290,13 @@ class TokenCounter:
         with self.config.output as f:
             match self.config.output_format:
                 case "json":
-                    json.dump(self, f, cls=TokenEncoder, indent=2)
+                    json.dump(self, f, cls=TokenCounterEncoder, indent=2)
                 case "html":
                     _ = f.write(self._to_html())
                 case _:
                     _ = f.write(self._to_text())
 
-class TokenEncoder(json.JSONEncoder):
+class TokenCounterEncoder(json.JSONEncoder):
     """
     A custom token encoder that overrides the default() method to allow encoding of the TokenCounter to JSON
     """
