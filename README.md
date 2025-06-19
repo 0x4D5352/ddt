@@ -9,20 +9,33 @@ Language Model to hold the entirety of a given set of files in its context windo
 
 ## Installation and Use
 
-To install DDT, clone this repo and choose the easy path or the hard path:
+### Binary Distribution
 
-### The Easy Path
+#### The Easy Way: pipx
 
-1. Install [uv](https://docs.astral.sh/uv/getting-started/installation/), the
-python package and project manager.
-2. Run `uv run ddt.py /PATH/TO/TARGET`
+1. Install with pipx with the command `pipx install ddt`
+2. Run `ddt /path/to/target`
 
-### The Hard Path
+#### The Less Easy Way: pip
+
+1. Install with pip with the command `pip install ddt`
+2. Run `ddt /path/to/target`
+
+### Building from source
+
+#### The Easy Way: UV
+
+1. Clone the repository.
+2. Using the `uv` package manager, run `uv build`
+3. Run `pipx install dist/ddt-x.y.z-py3-none-any.whl`, where x.y.z is the version you installed.
+4. Run `ddt /path/to/target`
+
+#### The Hard Way: Old School
 
 1. Set up a python virtual environment with `python3 -m venv .venv`
 2. Enter the virtual environment with `source .venv/bin/activate`
 3. Run `python -m pip install -e .`
-4. Run `python ddt.py /PATH/TO/TARGET`
+4. Run `ddt /path/to/target`
 5. Remember to run `exit` when you're done to leave the python venv!
 
 ### Command Line Flags
@@ -58,12 +71,6 @@ token counts for older models, such as gpt-4 or text-davinci-003,
 pass the corresponding model name into the `-m` or `--model` flag.
 If the model you wish to test is not listed, reference the model list from
 [this](https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb) OpenAI Cookbook.
-
-### Config File
-
-If you wish to configure DDT without passing multiple command line flags, you
-can provide a configuration file in JSON format with the `--config /path/to/config.json`
-flag. Any value not specified within the config will use the default arguments.
 
 ## What are Tokens?
 

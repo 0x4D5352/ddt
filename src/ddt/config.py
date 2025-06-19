@@ -110,3 +110,36 @@ class Config:
     def _setup_logging(self) -> None:
         level = logging.DEBUG if self.is_verbose else logging.INFO
         logging.basicConfig(format='%(message)s', level=level)
+
+def generate_config(args) -> Config:
+    """
+    Basically the main function of this class - it converts the CLI config into a system config:
+
+    - Fills out config with existing config file.
+    - Specifies output format.
+    - applies CLI args to config
+    - Resolves the root path and validates that it is a directory
+    - Generates and returns a config based on the CLI and JSON config
+    """
+    if args.json:
+        output_format = "json"
+    elif args.html:
+        output_format = "html"
+    else:
+        output_format = "txt"
+
+    cfg = Config(
+        root=args.directory.resolve(),
+        is_verbose=args.verbose,
+        include_gitignore=args.include_gitignore,
+        include_dotfiles=args.include_dotfiles,
+        include_symlinks=args.include_symlinks,
+        include_images=args.include_images,
+        resolve_paths=args.resolve_paths,
+        model=args.model,
+        output=args.output,
+        output_format=output_format,
+        exclude=args.exclude,
+        include=args.include,
+    )
+    return cfg

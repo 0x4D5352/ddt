@@ -1,5 +1,5 @@
 import logging
-from . import cli, models
+from . import cli, config, models
 
 """
 Main function
@@ -9,11 +9,11 @@ Main function
 def main() -> None:
     p = cli.setup_argparse()
     args = p.parse_args()
-    config = cli.generate_config(args)
+    cfg = config.generate_config(args)
 
-    token_counter = models.TokenCounter(config)
-    token_counter.add_exclusions(config.exclude)
-    token_counter.add_inclusions(config.include)
+    token_counter = models.TokenCounter(cfg)
+    token_counter.add_exclusions(cfg.exclude)
+    token_counter.add_inclusions(cfg.include)
 
     logging.debug("Parsing files...")
 
