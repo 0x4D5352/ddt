@@ -20,6 +20,9 @@ class CLIParser:
         self.args: argparse.Namespace | None = None
 
     def parse_args(self, argv: list[str] | None = None) -> None:
+        """
+        Processes argv and sets up logging.
+        """
         self.args = self.parser.parse_args(argv)
         self._setup_logging()
 
@@ -138,7 +141,13 @@ class CLIParser:
 
     def generate_config(self) -> models.Config:
         """
-        Basically the main function of this class - it converts the CLI config into a system config
+        Basically the main function of this class - it converts the CLI config into a system config:
+
+        - Fills out config with existing config file.
+        - Specifies output format.
+        - applies CLI args to config
+        - Resolves the root path and validates that it is a directory
+        - Generates and returns a config based on the CLI and JSON config
         """
         if self.args.config:
             with self.args.config.open("r") as json_conf:
@@ -152,6 +161,7 @@ class CLIParser:
             output_format = "html"
         else:
             output_format = "txt"
+
         for arg, value in vars(self.args).items():
             if arg == "config" or arg in conf.keys():
                 continue
@@ -163,7 +173,8 @@ class CLIParser:
             )
             sysexit(1)
 
-        root = conf["directory"].resolve()
+        root: Path = conf["directory"].resolve()
+        # TODO: replace with single file tokenization if a file instead of a directory
         if not root.is_dir():
             print("ERROR: Path Provided Is Not A Directory")
             sysexit(1)

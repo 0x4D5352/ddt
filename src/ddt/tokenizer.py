@@ -29,6 +29,9 @@ def calculate_text_tokens(string: str, model_name: str) -> int:
 # TODO: update with more up to date checks for models
 # def old_calculate_image_tokens(width: int, height: int) -> int:
 def calculate_image_tokens(width: int, height: int) -> int:
+    """
+    Returns the number of tokens in an image
+    """
     # below is only valid for the following models:
     # 4o, 4.1, 4.5
     # Step 1: scale to fit within a 2048 x 2048 square (maintain aspect ratio)
