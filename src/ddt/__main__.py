@@ -1,5 +1,5 @@
 import logging
-from . import parser, models
+from . import cli, models
 
 """
 Main function
@@ -7,8 +7,9 @@ Main function
 
 
 def main() -> None:
-    cli = parser.CLIParser()
-    config = cli.generate_config()
+    p = cli.setup_argparse()
+    args = p.parse_args()
+    config = cli.generate_config(args)
 
     token_counter = models.TokenCounter(config)
     token_counter.add_exclusions(config.exclude)

@@ -6,7 +6,7 @@ from ddt import parser
 
 def test_parser_initialization():
     cli = parser.CLIParser()
-    pass
+    assert True 
 
 
 # CLIParser Args

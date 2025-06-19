@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from typing import TextIO
 from dataclasses import dataclass, field
@@ -43,10 +44,11 @@ class Config:
     gitignore: set[Path] = field(init=False)
 
     def __post_init__(self):
-        self.gitignore = self.parse_gitignore()
+        self.gitignore = self._parse_gitignore()
+        self._setup_logging()
 
     # AI rewrote this function for me, need to replace.
-    def parse_gitignore(self) -> set[Path]:
+    def _parse_gitignore(self) -> set[Path]:
         # TODO: implement https://github.com/cpburnz/python-pathspec for gitignore and rewrite from scratch. or maybe its fine to just keep?
         """
         Reads the .gitignore file in the given root directory, interprets its patterns,
@@ -105,3 +107,6 @@ class Config:
 
         return ignored
 
+    def _setup_logging(self) -> None:
+        level = logging.DEBUG if self.is_verbose else logging.INFO
+        logging.basicConfig(format='%(message)s', level=level)
