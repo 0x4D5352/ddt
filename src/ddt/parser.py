@@ -4,6 +4,7 @@ import json
 import argparse
 import sys
 import logging
+from typing import final
 from . import models
 
 
@@ -12,20 +13,25 @@ CLI Arg Parser
 """
 
 
+@final
 class CLIParser:
     def __init__(self) -> None:
         self.parser = self.setup_argparse()
-        self.args = None
+        self.args: argparse.Namespace | None = None
 
     def parse_args(self, argv: list[str] | None = None) -> None:
         self.args = self.parser.parse_args(argv)
         self._setup_logging()
 
+    # TODO: set this up in the config instead
     def _setup_logging(self) -> None:
         level = logging.DEBUG if self.args.verbose else logging.INFO
         logging.basicConfig(format='%(message)s', level=level)
 
     def setup_argparse(self) -> argparse.ArgumentParser:
+        """
+        Configures the CLI flags.
+        """
         parser = argparse.ArgumentParser(
             prog="Tokenizer",
             description="Crawls a given directory, counts the number of tokens per filetype in the project and returns a per-type total and grand total",
@@ -131,6 +137,9 @@ class CLIParser:
         return parser
 
     def generate_config(self) -> models.Config:
+        """
+        Basically the main function of this class - it converts the CLI config into a system config
+        """
         if self.args.config:
             with self.args.config.open("r") as json_conf:
                 conf = json.load(json_conf)

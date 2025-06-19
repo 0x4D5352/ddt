@@ -23,6 +23,24 @@ Config model
 
 @dataclass
 class Config:
+    """
+    A class representing the configuration for the current run of DDT. 
+
+    Properties:
+        root (Path): The starting directory for the path traversal.
+        is_verbose (bool): Verbosity flag - True logs DEBUG output.
+        include_gitignore (bool): Flag - True counts tokens of gitignored files.
+        include_dotfiles (bool): Flag - True counts tokens of dotfiles and dotfile directories.
+        include_symlinks (bool): Flag - True counts tokens of symbolically linked files.
+        include_images (bool): Flag - True counts image tokens.
+        resolve_paths (bool): Flag - True displays file names by their absolute path.
+        model (Model): The specified model for the encoding algorithms.
+        output (TextIO): The output stream for results.
+        output_format (str): The output encoding format.
+        exclude (list[str]): The list of user-specified filetypes to exclude
+        include (list[str]): The list of user-specified filetypes to include - all other types are ignored.
+        gitignore (set[Path]): The files found within the gitignore.
+    """
     root: Path
     is_verbose: bool
     include_gitignore: bool
@@ -38,7 +56,8 @@ class Config:
     gitignore: set[Path] = field(init=False)
 
     def __post_init__(self):
-        self.gitignore = self.parse_gitignore()
+        if self.include_gitignore:
+            self.gitignore = self.parse_gitignore()
 
     # AI rewrote this function for me, need to replace.
     def parse_gitignore(self) -> set[Path]:
@@ -110,7 +129,7 @@ class TokenCounter:
     """
     A class representing the contents of a directory and the count of tokens per file in that directory.
 
-    Args:
+    Attributes:
         root(Path): The root path of the directory.
         all_files(list[Path]): All file paths in the directory.
         ignored_files(dict[str, list[Path]]): All files ignored by the scan, grouped by extension.
@@ -124,21 +143,21 @@ class TokenCounter:
     def __init__(self, cfg: Config) -> None:
         mimetypes.init()
         self.config: Config = cfg
-        if self.config.resolve_paths:
-            self.all_files: list[Path] = [
-                file.resolve() for file in self.config.root.glob("**/*.*")
-            ]
-        else:
-            self.all_files: list[Path] = [
-                file for file in self.config.root.glob("**/*.*")
-            ]
+        self.all_files: list[Path] = [
+            file.resolve() for file in self.config.root.glob("**/*.*")
+        ] if self.config.resolve_paths else [
+            file for file in self.config.root.glob("**/*.*")
+        ]
         self.ignored_files: dict[str, list[Path]] = {}
         self.scanned_files: dict[str, FileCategory] = {}
         self.excluded_files: set[Path] = set()
         self.included_files: set[Path] = set()
         self.total: int = 0
 
-    def _to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
+        """
+        Converts TokenCounter to a dictionary type for JSON encoding.
+        """
         return {
             "root": str(self.config.root),
             "all_files": [path.name for path in self.all_files],
@@ -147,12 +166,15 @@ class TokenCounter:
                 for key, paths in self.ignored_files.items()
             },
             "scanned_files": {
-                ext: category._to_dict() for ext, category in self.scanned_files.items()
+                ext: category.to_dict() for ext, category in self.scanned_files.items()
             },
             "total": self.total,
         }
 
     def _to_text(self) -> str:
+        """
+        Converts TokenCounter to an ASCII-style table.
+        """
         result: str = ""
         if self.config.is_verbose:
             result += "ignored:\n"
@@ -183,9 +205,12 @@ class TokenCounter:
         return result
 
     def _to_html(self) -> str:
+        """
+        Converts TokenCounter to an HTML table.
+        """
         env = Environment(loader=PackageLoader("ddt"), autoescape=select_autoescape())
         template = env.get_template("template.html")
-        values: dict = {
+        values: dict[str,Path | bool | dict[str,list[Path]] | dict[str,FileCategory] | int ] = {
             "directory": self.config.root,
             "verbose": self.config.is_verbose,
             "ignored_files": self.ignored_files,
@@ -196,6 +221,12 @@ class TokenCounter:
         return result
 
     def add_exclusions(self, exclusions: list[str]) -> None:
+        """
+        Adds filetypes to the excluded files list.
+
+        Args:
+            exclusions (list[str]): The file extensions to be excluded.
+        """
         if exclusions is None or len(exclusions) < 1:
             return
         for ext in exclusions:
@@ -203,42 +234,82 @@ class TokenCounter:
                 self.excluded_files.add(file.resolve())
 
     def add_inclusions(self, inclusions: list[str]) -> None:
+        """
+        Adds files to the included files list.
+
+        Args:
+            inclusions (list[str]): The file extensions to be included.
+        """
         if inclusions is None or len(inclusions) < 1:
             return
         for ext in inclusions:
             for file in self.config.root.glob(f"**/*.{ext}"):
                 self.included_files.add(file.resolve())
 
+    # TODO: remove file_extension, is present within Path.suffix
     def count_text_file(self, file: Path, file_extension: str) -> int:
+        """
+        Parses the given text file and return the total number of tokens.
+
+        Args:
+            file (Path): The text file being processed
+            file_extension (str): The suffix of the filetype.
+
+        Returns:
+            int: the total number of tokens in the file.
+        """
         try:
             text = file.read_text()
         except UnicodeDecodeError:
+            logging.debug(f"file {file.name} hit unicode error, ignoring")
             if file_extension not in self.ignored_files:
                 self.ignored_files[file_extension] = []
             self.ignored_files[file_extension].append(file)
-            logging.debug(f"file {file.name} hit unicode error, ignoring")
             return 0
         return tokenizer.calculate_text_tokens(text, self.config.model)
 
+    # TODO: remove file_extension, is present within Path.suffix
     def count_image_file(self, file: Path, file_extension: str) -> int:
+        """
+        Parses the given image file and return the total number of tokens.
+
+        Args:
+            file (Path): The text image being processed
+            file_extension (str): The suffix of the filetype.
+
+        Returns:
+            int: the total number of tokens in the file.
+        """
         try:
             img = Image.open(file)
             width, height = img.size
             return tokenizer.calculate_image_tokens(width, height)
         except Exception as e:
+            logging.debug(f"file {file.name} hit error {e}, ignoring")
             if file_extension not in self.ignored_files:
                 self.ignored_files[file_extension] = []
             self.ignored_files[file_extension].append(file)
-            logging.debug(f"file {file.name} hit error {e}, ignoring")
             return 0
 
     def add_to_ignored(self, file: Path, filetype: str):
+        """
+        Adds the given file to the ignored files list.
+        """
         logging.debug(f"ignoring {str(file)}")
         if filetype not in self.ignored_files:
             self.ignored_files[filetype] = []
         self.ignored_files[filetype].append(file)
 
     def parse_files(self):
+        """
+        Performs the entire file parsing operation - basically the main() function for this tokencounter.
+
+        It checks the mimeype, ignores non-included files, ignores excluded files, ignores dotfiles,
+        ignores gitignored files, ignores symlinks, and ignores images.
+
+        It calls all the actual token counting code, it handles adding the files to the scanned files list,
+        and it even handles all the token total counting.
+        """
         for file in self.all_files:
             logging.debug(f"checking {str(file)}")
             if file.is_dir():
@@ -302,6 +373,15 @@ class TokenCounter:
             self.total += token_counts
 
     def grab_suffix(self, file: Path) -> str:
+        """
+        A helper module to handle the cases where a filetype has multiple periods in the extension, e.g. .tar.gz
+
+        Args:
+            file (Path): The file path
+
+        Returns:
+            str: the full file path.
+        """
         if len(file.suffixes) == 1:
             return file.suffix
         result = ""
@@ -310,20 +390,26 @@ class TokenCounter:
         return result
 
     def output(self) -> None:
+        """
+        Writes the contents of the tokenencoder to the eoutput.
+        """
         assert self.config.output
         with self.config.output as f:
             match self.config.output_format:
                 case "json":
                     json.dump(self, f, cls=TokenEncoder, indent=2)
                 case "html":
-                    f.write(self._to_html())
+                    _ = f.write(self._to_html())
                 case _:
-                    f.write(self._to_text())
+                    _ = f.write(self._to_text())
 
 class TokenEncoder(json.JSONEncoder):
+    """
+    A custom token encoder that overrides the default() method to allow encoding of the TokenCounter to JSON
+    """
     def default(self, o: Any) -> Any:
         if isinstance(o, TokenCounter) or isinstance(o, FileCategory):
-            return o._to_dict()
+            return o.to_dict()
         return super().default(o)
 
 class FileCategory:
@@ -345,7 +431,10 @@ class FileCategory:
         self.files: list[dict[str, str | int]] = []
         self.total: int = 0
 
-    def _to_dict(self):
+    def to_dict(self):
+        """
+        Converts TokenCounter to a dictionary type for JSON encoding.
+        """
         return {
             "total": self.total,
             "files": self.files,
