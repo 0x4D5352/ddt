@@ -43,8 +43,7 @@ class Config:
     gitignore: set[Path] = field(init=False)
 
     def __post_init__(self):
-        if self.include_gitignore:
-            self.gitignore = self.parse_gitignore()
+        self.gitignore = self.parse_gitignore()
 
     # AI rewrote this function for me, need to replace.
     def parse_gitignore(self) -> set[Path]:
