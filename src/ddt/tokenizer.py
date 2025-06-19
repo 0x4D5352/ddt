@@ -1,13 +1,23 @@
 from tiktoken import model, encoding_for_model
 from math import ceil
+from typing import NewType
+
+"""
+type aliasing for convenince
+"""
+
+def get_models():
+    return [key for key in model.MODEL_TO_ENCODING.keys()]
+
+Model = NewType("Model", str)
+GPT_4O = Model("gpt-4o")
+MODEL_CHOICES: set[Model] = set(Model(model) for model in get_models())
 
 
 """
 Tokenizing methods
 """
 
-def get_models():
-    return [key for key in model.MODEL_TO_ENCODING.keys()]
 
 def calculate_text_tokens(string: str, model_name: str) -> int:
     """Returns the number of tokens in a text string"""

@@ -5,7 +5,7 @@ import argparse
 import sys
 import logging
 from typing import final
-from . import models
+from . import config, tokenizer
 
 
 """
@@ -98,9 +98,9 @@ class CLIParser:
             "--model",
             action="store",
             help="specify a model to use for token approximation. default is 'gpt-4o'",
-            choices=models.MODEL_CHOICES,
-            default=models.GPT_4O,
-            type=models.Model,
+            choices=tokenizer.MODEL_CHOICES,
+            default=tokenizer.GPT_4O,
+            type=tokenizer.Model,
         )
 
         parser.add_argument(
@@ -139,7 +139,7 @@ class CLIParser:
         )
         return parser
 
-    def generate_config(self) -> models.Config:
+    def generate_config(self) -> config.Config:
         """
         Basically the main function of this class - it converts the CLI config into a system config:
 
@@ -179,7 +179,7 @@ class CLIParser:
             print("ERROR: Path Provided Is Not A Directory")
             sysexit(1)
 
-        cfg = models.Config(
+        cfg = config.Config(
             root=root,
             is_verbose=conf["verbose"],
             include_gitignore=conf["include_gitignore"],

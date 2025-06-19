@@ -1,15 +1,7 @@
 from pathlib import Path
-from typing import NewType, TextIO
+from typing import TextIO
 from dataclasses import dataclass, field
 from . import tokenizer
-
-"""
-type aliasing for convenince
-"""
-
-Model = NewType("Model", str)
-GPT_4O = Model("gpt-4o")
-MODEL_CHOICES: set[Model] = set(Model(model) for model in tokenizer.get_models())
 
 """
 Config model
@@ -43,7 +35,7 @@ class Config:
     include_symlinks: bool
     include_images: bool
     resolve_paths: bool
-    model: Model
+    model: tokenizer.Model
     output: TextIO
     output_format: str
     exclude: list[str]
