@@ -8,7 +8,6 @@ Main function
 
 def main() -> None:
     cli = parser.CLIParser()
-    cli.parse_args()
     config = cli.generate_config()
 
     token_counter = models.TokenCounter(config)

@@ -17,14 +17,9 @@ CLI Arg Parser
 class CLIParser:
     def __init__(self) -> None:
         self.parser = self.setup_argparse()
-        self.args: argparse.Namespace | None = None
-
-    def parse_args(self, argv: list[str] | None = None) -> None:
-        """
-        Processes argv and sets up logging.
-        """
-        self.args = self.parser.parse_args(argv)
+        self.args: argparse.Namespace = self.parser.parse_args()
         self._setup_logging()
+
 
     # TODO: set this up in the config instead
     def _setup_logging(self) -> None:
