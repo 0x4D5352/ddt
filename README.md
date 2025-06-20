@@ -38,7 +38,38 @@ Language Model to hold the entirety of a given set of files in its context windo
 4. Run `ddt /path/to/target`
 5. Remember to run `exit` when you're done to leave the python venv!
 
-### Command Line Flags
+## Help Commands
+
+```bash
+usage: Tokenizer [-h] [-c CONFIG] [-v] [-g] [-d] [-s] [-i] [-r] [-m MODEL] [-o OUTPUT] [--json | --html] [--exclude EXCLUDE | --include INCLUDE] directory
+
+Crawls a given directory, counts the number of tokens per filetype in the project and returns a per-type total and grand total
+
+positional arguments:
+  directory             the relative or absolute path to the directory you wish to scan
+
+options:
+  -h, --help            show this help message and exit
+  -v, --verbose         set to increase logging to console
+  -g, --include-gitignore
+                        include files and directories found in the .gitignore file
+  -d, --include-dotfiles
+                        include files and directories beginning with a dot (.)
+  -s, --include-symlinks
+                        include files and directories symlinked from outside the target directory
+  -i, --include-images  include image files found within the directory
+  -r, --resolve-paths   resolve relative file paths to their absolute location
+  -m, --model           specify a model to use for token approximation. default is 'gpt-4o'
+  -o, --output OUTPUT   redirect output from STDOUT to a file at the location specified.
+  --json                save the results of the scan to a json file
+  --html                save the results of the scan to a HTML file
+  --exclude EXCLUDE     specify file formats to ignore from counting. this flag may be set multiple times for multiple entries. cannot be set if including files
+  --include INCLUDE     specify file formats to include when counting. this flag may be set multiple times for multiple entries. cannot be set if excluding files
+
+Made with <3 by 0x4D5352
+```
+
+## Command Line Flags
 
 Beyond the traditional `-h` and `-v` flags, DDT can be configured a number of ways:
 
@@ -108,41 +139,8 @@ will begin behaving in unintended ways:
 - The LLM might hallucinate information that no longer appears in the data.
 - LLM Agents might lose functionality or send malformed input to its actions.
 
-The current generation of LLMs (e.g. GPT-4o, GPT-o1, Claude Sonnet 3.5) have a
-context window of 128,000 or 200,000 tokens. Future models are expected to have
-between 500,000 and 1,000,000 tokens. The upper limit is currently unknown.
+Context windows vary in size, with current models handling anywhere from 1,000
+to 1,000,000 tokens. Even with the larger windows, it is common to limit the
+maximum number of tokens to reduce compute requirements and increase speed.
 
 For reference: [curl](https://github.com/curl/curl) is approximately 1,750,000 tokens.
-
-## Help Commands
-
-```bash
-usage: Tokenizer [-h] [-c CONFIG] [-v] [-g] [-d] [-s] [-i] [-r] [-m {gpt-4,text-davinci-003,gpt-4o}] [-o OUTPUT] [--json | --html] [--exclude EXCLUDE | --include INCLUDE] directory
-
-Crawls a given directory, counts the number of tokens per filetype in the project and returns a per-type total and grand total
-
-positional arguments:
-  directory             the relative or absolute path to the directory you wish to scan
-
-options:
-  -h, --help            show this help message and exit
-  -c, --config CONFIG   Load one or more configurations from a file. Unset configs will use defaults.
-  -v, --verbose         set to increase logging to console
-  -g, --include-gitignore
-                        include files and directories found in the .gitignore file
-  -d, --include-dotfiles
-                        include files and directories beginning with a dot (.)
-  -s, --include-symlinks
-                        include files and directories symlinked from outside the target directory
-  -i, --include-images  include image files found within the directory
-  -r, --resolve-paths   resolve relative file paths to their absolute location
-  -m, --model {gpt-4,text-davinci-003,gpt-4o}
-                        specify a model to use for token approximation. default is 'gpt-4o'
-  -o, --output OUTPUT   redirect output from STDOUT to a file at the location specified.
-  --json                save the results of the scan to a json file
-  --html                save the results of the scan to a HTML file
-  --exclude EXCLUDE     specify file formats to ignore from counting. this flag may be set multiple times for multiple entries. cannot be set if including files
-  --include INCLUDE     specify file formats to include when counting. this flag may be set multiple times for multiple entries. cannot be set if excluding files
-
-Made with <3 by 0x4D5352
-```
