@@ -7,7 +7,7 @@ will scan a directory and count the number of tokens per file, subdivided
 by filetype. Useful for figuring out how difficult it will be for a Large
 Language Model to hold the entirety of a given set of files in its context window.
 
-> ![WARNING] Heads Up!
+> [!WARNING] Heads Up!
 > While functional, DDT is still in its very early stages and is not considered
 > stable. Versioning will follow pre-v0 semantic versioning where minor version
 > updates indicate non-backwards compatible changes in addition to new features.
