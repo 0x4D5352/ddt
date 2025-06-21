@@ -16,7 +16,7 @@ def test_parser_greet_args():
 def test_directory_arg():
     parser = cli.setup_argparse()
     args = parser.parse_args(["src"])
-    assert args.directory == Path("src")
+    assert args.root == Path("src")
 
 def test_verbosity_arg():
     parser = cli.setup_argparse()

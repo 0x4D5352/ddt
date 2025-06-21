@@ -47,7 +47,7 @@ def test_config_happy_path():
 def test_generate_config():
     args = {
         "root": Path("."),
-        "is_verbose": True,
+        "verbose": True,
         "include_gitignore": True,
         "include_dotfiles": True,
         "include_symlinks": True,

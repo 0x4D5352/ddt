@@ -121,15 +121,15 @@ def generate_config(args: dict[str, Any]) -> Config:
     - Resolves the root path and validates that it is a directory
     - Generates and returns a config based on the CLI and JSON config
     """
-    if args["json"]:
+    if "json" in args.keys():
         output_format = "json"
-    elif args["html"]:
+    elif "html" in args.keys():
         output_format = "html"
     else:
         output_format = "txt"
 
     cfg = Config(
-        root=args["directory"].resolve(),
+        root=args["root"].resolve(),
         is_verbose=args["verbose"],
         include_gitignore=args["include_gitignore"],
         include_dotfiles=args["include_dotfiles"],

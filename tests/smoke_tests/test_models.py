@@ -1,12 +1,22 @@
-"""
-    models.py
-"""
+from pathlib import Path
+import sys
+from ddt import config, models
+from ddt.tokenizer import Model
 
 """
     token counter
 """
 
-# TokenCounter Init
+def test_tokencounter_init():
+    cfg = config.Config(Path('.'), False, False, False, False, False, False, Model('gpt-4o'), sys.stdout," txt", [], [])
+    tc = models.TokenCounter(cfg)
+    assert tc.config == cfg
+    assert tc.all_files == [file for file in Path('.').glob('**/*.*')]
+    assert tc.ignored_files == dict()
+    assert tc.scanned_files == dict()
+    assert tc.excluded_files == set()
+    assert tc.included_files == set()
+    assert tc.total == 0
 
 # TokenCounter to_dict
 
@@ -26,7 +36,7 @@
 
 # tokencounter filter_file
 
-# tokencounter parse_files
+# tokencounter parse_file
 
 # tokencounter parse_files
 
@@ -34,7 +44,7 @@
 
 # tokencounter output
 
-# tokenencoder custom instance
+# TokenCounterEncoder custom instance
 
 
 """
