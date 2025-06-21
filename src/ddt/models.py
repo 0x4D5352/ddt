@@ -134,7 +134,6 @@ class TokenCounter:
             for file in self.config.root.glob(f"**/*.{ext}"):
                 self.included_files.add(file.resolve())
 
-    # TODO: remove file_extension, is present within Path.suffix
     def count_text_file(self, file: Path) -> int:
         """
         Parses the given text file and return the total number of tokens.
@@ -154,7 +153,6 @@ class TokenCounter:
             return 0
         return tokenizer.calculate_text_tokens(text, self.config.model)
 
-    # TODO: remove file_extension, is present within Path.suffix
     def count_image_file(self, file: Path) -> int:
         """
         Parses the given image file and return the total number of tokens.
