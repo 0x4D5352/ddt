@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 import sys
 from ddt import config, models
@@ -66,22 +67,95 @@ def test_tokencounter_count_text_file():
     count = tc.count_text_file(Path("assets/demo.tape"))
     assert count == 830
 
-# tokencounter count_image_file demo.gif: 1,105 tokens
 def test_tokencounter_count_image_file():
     cfg = config.Config(Path('.'), True, False, False, False, False, False, Model('gpt-4o'), sys.stdout," txt", [], [])
     tc = models.TokenCounter(cfg)
     count = tc.count_image_file(Path("assets/demo.gif"))
     assert count == 1105
 
-# tokencounter add_to_ignored
+def test_tokencounter_add_to_ignored():
+    cfg = config.Config(Path('.'), True, False, False, False, False, False, Model('gpt-4o'), sys.stdout," txt", [], [])
+    tc = models.TokenCounter(cfg)
+    file = Path("README.md")
+    tc.add_to_ignored(file)
+    assert file in tc.ignored_files[".md"]
 
-# tokencounter filter_file
+def test_tokencounter_filter_file():
+    cfg = config.Config(Path('.'), True, False, False, False, False, False, Model('gpt-4o'), sys.stdout," txt", [], [])
+    tc = models.TokenCounter(cfg)
 
-# tokencounter parse_file
+    inclusions = ["py"]
+    tc.add_inclusions(inclusions)
+    not_included = Path("README.md")
+    filtered = tc.filter_file(not_included)
+    assert filtered
+    assert tc.ignored_files[".md"] == [not_included]
+    tc.included_files = set()
+    tc.ignored_files = dict()
 
-# tokencounter parse_files
+    exclusions = ["lock"]
+    tc.add_exclusions(exclusions)
+    excluded_file = Path("uv.lock")
+    filtered = tc.filter_file(excluded_file)
+    assert filtered
+    assert tc.ignored_files[".lock"] == [excluded_file]
+    tc.excluded_files = set()
+    tc.ignored_files = dict()
 
-# tokencounter grab_suffix
+    # dotfiles
+    dotfile = Path(".gitignore")
+    filtered = tc.filter_file(dotfile)
+    assert filtered
+    assert [dotfile] in tc.ignored_files.values()
+    tc.ignored_files = dict()
+
+    # gitignore
+    with open("gitignored.json", "w") as file:
+        _ = file.write('{"foo": "bar"}')
+    gitignored = Path("gitignored.json")
+    filtered = tc.filter_file(gitignored)
+    assert filtered
+    assert tc.ignored_files[".json"] == [gitignored]
+    tc.ignored_files = dict()
+    os.remove(gitignored)
+
+    # symlinks
+    symlinked = Path("tests/README.md")
+    filtered = tc.filter_file(symlinked)
+    assert filtered
+    assert tc.ignored_files[".md"] == [symlinked]
+
+
+def test_tokencounter_parse_file():
+    cfg = config.Config(Path('.'), True, False, False, False, False, False, Model('gpt-4o'), sys.stdout," txt", [], [])
+    tc = models.TokenCounter(cfg)
+    file = Path("tests/testfile.txt")
+    extension, token_count = tc.parse_file(file)
+    assert extension == ".txt"
+    assert token_count == 22
+
+def test_tokencounter_parse_files():
+    cfg = config.Config(Path('assets'), True, False, False, False, False, False, Model('gpt-4o'), sys.stdout," txt", [], [])
+    tc = models.TokenCounter(cfg)
+    tc.parse_files()
+    assert tc.ignored_files[".png"] == [Path("assets/contextwindow.png"), Path("assets/beemovie.png")]
+    assert tc.ignored_files[".gif"] == [Path("assets/demo.gif")]
+    
+    assert tc.scanned_files[".tape"].files == [{"file": Path("assets/demo.tape").name, "tokens": 830}]
+    assert tc.total == 830
+
+def test_tokencounter_grab_suffix():
+    cfg = config.Config(Path('assets'), True, False, False, False, False, False, Model('gpt-4o'), sys.stdout," txt", [], [])
+    tc = models.TokenCounter(cfg)
+    file = Path("README.md")
+    suffix = tc.grab_suffix(file)
+    assert suffix == ".md"
+    with open("foobar.tar.gz", "w") as f:
+        _ = f.write("hello mom")
+    file = Path("foobar.tar.gz")
+    suffix = tc.grab_suffix(file)
+    assert suffix == ".tar.gz"
+    os.remove(file)
 
 # tokencounter output
 
