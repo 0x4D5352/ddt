@@ -213,49 +213,62 @@ class TokenCounter:
 
         return False
 
+    def parse_file(self, file: Path) -> tuple[str, int]:
+        """
+        Parses an individual file. Checks the MIME, and 
+        """
+        file_extension = self.grab_suffix(file)
+
+        # TODO: start subdividing by mimetypes and set up your own mimetype list
+        # file_type = mimetypes.guess_file_type(file)
+        # logging.debug(f"filetype guess: {file_type}")
+        mime: str | None = (
+            mimetypes.types_map[file_extension]
+            if file_extension in mimetypes.types_map
+            else None
+        )
+
+
+
+        logging.debug(f"reading {str(file)}")
+
+        if mime:
+            category = mime.split("/")[0]
+            match category:
+                case "image":
+                    if self.config.include_images:
+                        token_counts = self.count_image_file(file)
+                    else:
+                        self.add_to_ignored(file)
+                        return "", 0
+                case _:
+                    # currently assuming everything is a text file if it's not an image
+                    token_counts = self.count_text_file(file)
+        else:
+            token_counts = self.count_text_file(file)
+        return file_extension, token_counts
+
     def parse_files(self):
         """
-        Performs the entire file parsing operation - basically the main() function for this tokencounter.
+        Iterate through `self.all_files`, skip uncounted files, and parse the rest.
+        Anything that didn't result in a token count is skipeped, and the rest are added
+        to the list of scanned files.
 
-        It checks the mimeype, ignores non-included files, ignores excluded files, ignores dotfiles,
-        ignores gitignored files, ignores symlinks, and ignores images.
-
-        It calls all the actual token counting code, it handles adding the files to the scanned files list,
-        and it even handles all the token total counting.
         """
         for file in self.all_files:
             logging.debug(f"checking {str(file)}")
             if file.is_dir():
                 continue
-            file_extension = self.grab_suffix(file)
-            mime: str | None = (
-                mimetypes.types_map[file_extension]
-                if file_extension in mimetypes.types_map
-                else None
-            )
-
 
             filtered: bool = self.filter_file(file)
-
             if filtered:
                 continue
 
-            logging.debug(f"reading {str(file)}")
+            file_extension, token_counts = self.parse_file(file)
 
-            if mime:
-                category = mime.split("/")[0]
-                match category:
-                    case "image":
-                        if self.config.include_images:
-                            token_counts = self.count_image_file(file)
-                        else:
-                            self.add_to_ignored(file)
-                            continue
-                    case _:
-                        # currently assuming everything is a text file if it's not an image
-                        token_counts = self.count_text_file(file)
-            else:
-                token_counts = self.count_text_file(file)
+            # TODO: handle the case of empty files - right now we're treating empty and error as the same
+            if token_counts == 0:
+                continue
 
             if file_extension not in self.scanned_files:
                 self.scanned_files[file_extension] = FileCategory(file_extension)

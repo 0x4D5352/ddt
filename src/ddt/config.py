@@ -138,7 +138,7 @@ def generate_config(args: dict[str, Any]) -> Config:
         resolve_paths=args["resolve_paths"],
         model=args["model"],
         output=args["output"],
-        output_format=args["output_format"],
+        output_format=output_format,
         exclude=args["exclude"],
         include=args["include"],
     )
