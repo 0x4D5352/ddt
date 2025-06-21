@@ -18,7 +18,6 @@ def test_tokencounter_init():
     assert tc.included_files == set()
     assert tc.total == 0
 
-# TokenCounter to_dict
 def test_tokencounter_to_dict():
     cfg = config.Config(Path('.'), False, False, False, False, False, False, Model('gpt-4o'), sys.stdout," txt", [], [])
     tc = models.TokenCounter(cfg)
@@ -30,6 +29,13 @@ def test_tokencounter_to_dict():
     assert result["total"] == 0
 
 # TokenCounter to_text
+def test_tokencounter_to_text():
+    cfg = config.Config(Path('.'), True, False, False, False, False, False, Model('gpt-4o'), sys.stdout," txt", [], [])
+    tc = models.TokenCounter(cfg)
+    result = tc._to_text()
+    assert "=========================\n" in result
+    assert "ignored:" in result
+    assert "total:" in result
 
 # tokencounter to_html
 
