@@ -22,6 +22,10 @@
 
 # tokencounter count_image_file
 
+# tokencounter add_to_ignored
+
+# tokencounter filter_file
+
 # tokencounter parse_files
 
 # tokencounter parse_files
