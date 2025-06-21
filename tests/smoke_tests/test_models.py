@@ -28,7 +28,6 @@ def test_tokencounter_to_dict():
     assert result["scanned_files"] == dict()
     assert result["total"] == 0
 
-# TokenCounter to_text
 def test_tokencounter_to_text():
     cfg = config.Config(Path('.'), True, False, False, False, False, False, Model('gpt-4o'), sys.stdout," txt", [], [])
     tc = models.TokenCounter(cfg)
@@ -37,15 +36,42 @@ def test_tokencounter_to_text():
     assert "ignored:" in result
     assert "total:" in result
 
-# tokencounter to_html
+def test_tokencounter_to_html():
+    cfg = config.Config(Path('.'), True, False, False, False, False, False, Model('gpt-4o'), sys.stdout," txt", [], [])
+    tc = models.TokenCounter(cfg)
+    result = tc._to_html()
+    assert "<!DOCTYPE html>" in result
+    assert "Scanned files in" in result
+    assert "<table>" in result
+    assert "</table>" in result
+    assert '<th scope="row">Grand Total</th>' in result
 
-# tokencounter add_exclusions
+def test_tokencounter_add_exclusions():
+    cfg = config.Config(Path('.'), True, False, False, False, False, False, Model('gpt-4o'), sys.stdout," txt", [], [])
+    tc = models.TokenCounter(cfg)
+    exclusions = ["lock"]
+    tc.add_exclusions(exclusions)
+    assert tc.excluded_files == {Path("uv.lock").resolve()}
 
-# tokencounter add_inclusions
+def test_tokencounter_add_inclusions():
+    cfg = config.Config(Path('.'), True, False, False, False, False, False, Model('gpt-4o'), sys.stdout," txt", [], [])
+    tc = models.TokenCounter(cfg)
+    inclusions = ["lock"]
+    tc.add_inclusions(inclusions)
+    assert tc.included_files == {Path("uv.lock").resolve()}
 
-# tokencounter count_text_file
+def test_tokencounter_count_text_file():
+    cfg = config.Config(Path('.'), True, False, False, False, False, False, Model('gpt-4o'), sys.stdout," txt", [], [])
+    tc = models.TokenCounter(cfg)
+    count = tc.count_text_file(Path("assets/demo.tape"))
+    assert count == 830
 
-# tokencounter count_image_file
+# tokencounter count_image_file demo.gif: 1,105 tokens
+def test_tokencounter_count_image_file():
+    cfg = config.Config(Path('.'), True, False, False, False, False, False, Model('gpt-4o'), sys.stdout," txt", [], [])
+    tc = models.TokenCounter(cfg)
+    count = tc.count_image_file(Path("assets/demo.gif"))
+    assert count == 1105
 
 # tokencounter add_to_ignored
 
