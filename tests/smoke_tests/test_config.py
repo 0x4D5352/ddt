@@ -18,7 +18,7 @@ def test_config_happy_path():
     include = ["bar"]
 
     cfg = config.Config(
-        root, 
+        root,
         is_verbose,
         include_gitignore,
         include_dotfiles,
@@ -29,7 +29,8 @@ def test_config_happy_path():
         output,
         output_format,
         exclude,
-        include)
+        include,
+    )
 
     assert cfg.root == root
     assert cfg.is_verbose
@@ -43,6 +44,7 @@ def test_config_happy_path():
     assert cfg.output_format == "txt"
     assert cfg.exclude == ["foo"]
     assert cfg.include == ["bar"]
+
 
 def test_generate_config():
     args = {

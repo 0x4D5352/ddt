@@ -12,7 +12,7 @@ Config model
 @dataclass
 class Config:
     """
-    A class representing the configuration for the current run of DDT. 
+    A class representing the configuration for the current run of DDT.
 
     Properties:
         root (Path): The starting directory for the path traversal.
@@ -29,6 +29,7 @@ class Config:
         include (list[str]): The list of user-specified filetypes to include - all other types are ignored.
         gitignore (set[Path]): The files found within the gitignore.
     """
+
     root: Path
     is_verbose: bool
     include_gitignore: bool
@@ -109,7 +110,8 @@ class Config:
 
     def _setup_logging(self) -> None:
         level = logging.DEBUG if self.is_verbose else logging.INFO
-        logging.basicConfig(format='%(message)s', level=level)
+        logging.basicConfig(format="%(message)s", level=level)
+
 
 def generate_config(args: dict[str, Any]) -> Config:
     """

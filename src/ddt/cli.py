@@ -3,6 +3,7 @@ import argparse
 import sys
 from . import tokenizer
 
+
 def setup_argparse() -> argparse.ArgumentParser:
     """
     Configures the CLI flags.
@@ -110,4 +111,3 @@ def setup_argparse() -> argparse.ArgumentParser:
         type=str,
     )
     return parser
-

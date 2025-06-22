@@ -6,8 +6,10 @@ from typing import NewType
 type aliasing for convenince
 """
 
+
 def get_models():
     return [key for key in model.MODEL_TO_ENCODING.keys()]
+
 
 Model = NewType("Model", str)
 GPT_4O = Model("gpt-4o")
@@ -25,6 +27,7 @@ def calculate_text_tokens(string: str, model_name: str) -> int:
     num_tokens = len(encoding.encode(string))
     return num_tokens
 
+
 # TODO: add switch statement for strategies old and new
 # def calculate_image_tokens(width: int, height: int, model_name: str="TODO: fix me") -> int:
 #     logging.debug(f"calculating tokens for {model_name}")
@@ -35,6 +38,7 @@ def calculate_text_tokens(string: str, model_name: str) -> int:
 #     raise NotImplementedError
 
 # Source for original image token code: https://medium.com/@teekaifeng/gpt4o-visual-tokenizer-an-illustration-c69695dd4a39
+
 
 # TODO: update with more up to date checks for models
 # def old_calculate_image_tokens(width: int, height: int) -> int:

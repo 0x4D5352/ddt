@@ -31,11 +31,11 @@ class TokenCounter:
     def __init__(self, cfg: Config) -> None:
         mimetypes.init()
         self.config: Config = cfg
-        self.all_files: list[Path] = [
-            file.resolve() for file in self.config.root.glob("**/*.*")
-        ] if self.config.resolve_paths else [
-            file for file in self.config.root.glob("**/*.*")
-        ]
+        self.all_files: list[Path] = (
+            [file.resolve() for file in self.config.root.glob("**/*.*")]
+            if self.config.resolve_paths
+            else [file for file in self.config.root.glob("**/*.*")]
+        )
         self.ignored_files: dict[str, list[Path]] = {}
         self.scanned_files: dict[str, FileCategory] = {}
         self.excluded_files: set[Path] = set()
@@ -98,7 +98,9 @@ class TokenCounter:
         """
         env = Environment(loader=PackageLoader("ddt"), autoescape=select_autoescape())
         template = env.get_template("template.html")
-        values: dict[str,Path | bool | dict[str,list[Path]] | dict[str,FileCategory] | int ] = {
+        values: dict[
+            str, Path | bool | dict[str, list[Path]] | dict[str, FileCategory] | int
+        ] = {
             "directory": self.config.root,
             "verbose": self.config.is_verbose,
             "ignored_files": self.ignored_files,
@@ -213,7 +215,7 @@ class TokenCounter:
 
     def parse_file(self, file: Path) -> tuple[str, int]:
         """
-        Parses an individual file. Checks the MIME, and 
+        Parses an individual file. Checks the MIME, and
         """
         file_extension = self.grab_suffix(file)
 
@@ -225,8 +227,6 @@ class TokenCounter:
             if file_extension in mimetypes.types_map
             else None
         )
-
-
 
         logging.debug(f"reading {str(file)}")
 
@@ -307,14 +307,17 @@ class TokenCounter:
                 case _:
                     _ = f.write(self._to_text())
 
+
 class TokenCounterEncoder(json.JSONEncoder):
     """
     A custom token encoder that overrides the default() method to allow encoding of the TokenCounter to JSON
     """
+
     def default(self, o: Any) -> Any:
         if isinstance(o, TokenCounter) or isinstance(o, FileCategory):
             return o.to_dict()
         return super().default(o)
+
 
 class FileCategory:
     """
@@ -343,5 +346,3 @@ class FileCategory:
             "total": self.total,
             "files": self.files,
         }
-
-
