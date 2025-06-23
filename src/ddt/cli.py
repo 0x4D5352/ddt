@@ -21,13 +21,6 @@ def setup_argparse() -> argparse.ArgumentParser:
     )
 
     _ = parser.add_argument(
-        "-c",
-        "--config",
-        action="store",
-        help="Load one or more configurations from a file. Unset configs will use defaults.",
-        type=argparse.FileType(mode="r", encoding="UTF-8"),
-    )
-    _ = parser.add_argument(
         "-v",
         "--verbose",
         action="store_true",
