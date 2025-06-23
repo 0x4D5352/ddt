@@ -2,18 +2,8 @@ import os
 from pathlib import Path
 from ddt import cli, tokenizer
 
-"""
-def test_parser_greet_args():
-    parser = build_parser()
-    args = parser.parse_args(["greet", "Alice"])
 
-    assert args.command == "greet"
-    assert args.name == "Alice"
-    assert args.func == handle_greet
-"""
-
-
-def test_directory_arg():
+def test_root_arg():
     parser = cli.setup_argparse()
     args = parser.parse_args(["src"])
     assert args.root == Path("src")
