@@ -1,0 +1,2 @@
+from ddt import config
+

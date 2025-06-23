@@ -50,7 +50,7 @@ class Config:
 
     # AI rewrote this function for me, need to replace.
     def _parse_gitignore(self) -> set[Path]:
-        # TODO: implement https://github.com/cpburnz/python-pathspec for gitignore and rewrite from scratch. or maybe its fine to just keep?
+        # TODO: ensure that this matches the gitignore spec: https://git-scm.com/docs/gitignore
         """
         Reads the .gitignore file in the given root directory, interprets its patterns,
         and returns a set of Paths representing all files and directories within root that match
@@ -74,7 +74,7 @@ class Config:
 
         try:
             with gitignore_file.open("r") as f:
-                patterns = []
+                patterns: list[str] = []
                 for line in f:
                     stripped = line.strip()
                     # Skip empty lines or comments.
@@ -104,7 +104,7 @@ class Config:
                 matches = self.root.rglob(pattern)
 
             for match in matches:
-                ignored.add(match)
+                ignored.add(Path(match))
 
         return ignored
 
@@ -131,7 +131,7 @@ def generate_config(args: dict[str, Any]) -> Config:
         output_format = "txt"
 
     cfg = Config(
-        root=args["root"].resolve(),
+        root=args["root"],
         is_verbose=args["verbose"],
         include_gitignore=args["include_gitignore"],
         include_dotfiles=args["include_dotfiles"],
