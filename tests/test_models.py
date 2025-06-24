@@ -260,7 +260,7 @@ def test_tokencounter_filter_file():
     os.remove(gitignored)
 
     # symlinks
-    symlinked = Path("tests/README.md")
+    symlinked = Path("tests/test_files/README.md")
     filtered = tc.filter_file(symlinked)
     assert filtered
     assert tc.ignored_files[".md"] == [symlinked]
@@ -282,7 +282,7 @@ def test_tokencounter_parse_file():
         [],
     )
     tc = models.TokenCounter(cfg)
-    file = Path("tests/testfile.txt")
+    file = Path("tests/test_files/testfile.txt")
     extension, token_count = tc.parse_file(file)
     assert extension == ".txt"
     assert token_count == 22
@@ -363,7 +363,7 @@ def test_tokencounter_txt_output():
         tc = models.TokenCounter(cfg)
         tc.parse_files()
         tc.output()
-    with open("tests/output.txt", "r") as f:
+    with open("tests/test_files/output.txt", "r") as f:
         with open("foo.txt", "r") as file:
             assert file.read() == f.read()
     os.remove(Path("foo.txt"))
@@ -389,7 +389,7 @@ def test_tokencounter_json_output():
         tc = models.TokenCounter(cfg)
         tc.parse_files()
         tc.output()
-    with open("tests/output.json", "r") as f:
+    with open("tests/test_files/output.json", "r") as f:
         with open("foo.json", "r") as file:
             assert file.read() == f.read()
     os.remove(Path("foo.json"))
@@ -414,7 +414,7 @@ def test_tokencounter_html_output():
         tc = models.TokenCounter(cfg)
         tc.parse_files()
         tc.output()
-    with open("tests/output.html", "r") as f:
+    with open("tests/test_files/output.html", "r") as f:
         with open("foo.html", "r") as file:
             assert file.read() == f.read()
     os.remove(Path("foo.html"))
