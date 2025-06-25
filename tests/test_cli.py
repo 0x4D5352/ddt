@@ -4,7 +4,6 @@ from pathlib import Path
 from ddt import cli, tokenizer
 
 
-
 def test_root_arg():
     parser = cli.setup_argparse()
     args = parser.parse_args(["src"])
@@ -53,6 +52,7 @@ def test_model_choices_arg():
 
 def test_output_arg():
     parser = cli.setup_argparse()
+    # TODO: replace with pytest temp dir stuff
     with open("test.txt", "w") as file:
         args = parser.parse_args(["--output", "test.txt", "src"])
         assert args.output.name == file.name

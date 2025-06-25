@@ -250,6 +250,7 @@ def test_tokencounter_filter_file():
     tc.ignored_files = dict()
 
     # gitignore
+    # TODO: replace with pytest temp dir stuff
     with open("gitignored.json", "w") as file:
         _ = file.write('{"foo": "bar"}')
     gitignored = Path("gitignored.json")
@@ -336,6 +337,7 @@ def test_tokencounter_grab_suffix():
     file = Path("README.md")
     suffix = tc.grab_suffix(file)
     assert suffix == ".md"
+    # TODO: replace with pytest temp dir stuff
     with open("foobar.tar.gz", "w") as f:
         _ = f.write("hello mom")
     file = Path("foobar.tar.gz")
@@ -345,6 +347,7 @@ def test_tokencounter_grab_suffix():
 
 
 def test_tokencounter_txt_output():
+    # TODO: replace with pytest temp dir stuff
     with open("foo.txt", "w") as file:
         cfg = config.Config(
             Path("assets"),
@@ -371,6 +374,7 @@ def test_tokencounter_txt_output():
 
 # This covers the TokenCounterEncoder too, technically - it only exists in output()
 def test_tokencounter_json_output():
+    # TODO: replace with pytest temp dir stuff
     with open("foo.json", "w") as file:
         cfg = config.Config(
             Path("assets"),
@@ -396,6 +400,7 @@ def test_tokencounter_json_output():
 
 
 def test_tokencounter_html_output():
+    # TODO: replace with pytest temp dir stuff
     with open("foo.html", "w") as file:
         cfg = config.Config(
             Path("assets"),

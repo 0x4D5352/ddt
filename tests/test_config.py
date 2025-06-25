@@ -58,6 +58,8 @@ def test_generate_config():
         "model": tokenizer.Model("gpt-4o"),
         "output": sys.stdout,
         "output_format": "txt",
+        "json": False, # to fix test, goes away when output config changes
+        "html": False, # to fix test, goes away when output config changes
         "exclude": ["foo"],
         "include": ["bar"],
     }
