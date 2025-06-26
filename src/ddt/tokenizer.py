@@ -72,7 +72,3 @@ def calculate_image_tokens(width: int, height: int) -> int:
     total_tokens = 85 + 170 * (tiles_width * tiles_height)
 
     return total_tokens
-
-
-if __name__ == "__main__":
-    print(get_models())
