@@ -7,25 +7,76 @@ will scan a directory and count the number of tokens per file, subdivided
 by filetype. Useful for figuring out how difficult it will be for a Large
 Language Model to hold the entirety of a given set of files in its context window.
 
+> [!WARNING]
+> While functional, DDT is still in its very early stages and is not considered
+> stable. Versioning will follow pre-v0 semantic versioning where minor version
+> updates indicate non-backwards compatible changes in addition to new features.
+> Patch versions will focus on bugfixes, non-breaking feature improvements, and
+> early access to new features behind a special `--experimental {command}` flag.
+
 ## Installation and Use
 
-To install DDT, clone this repo and choose the easy path or the hard path:
+### Binary Distribution
 
-### The Easy Path
+#### The Easy Way: pipx
 
-1. Install [uv](https://docs.astral.sh/uv/getting-started/installation/), the
-python package and project manager.
-2. Run `uv run ddt.py /PATH/TO/TARGET`
+1. Install with pipx with the command `pipx install ddt`
+2. Run `ddt /path/to/target`
 
-### The Hard Path
+#### The Less Easy Way: pip
+
+1. Install with pip with the command `pip install ddt`
+2. Run `ddt /path/to/target`
+
+### Building from source
+
+#### The Easy Way: UV
+
+1. Clone the repository.
+2. Using the `uv` package manager, run `uv build`
+3. Run `pipx install dist/ddt-x.y.z-py3-none-any.whl`, where x.y.z is the version you installed.
+4. Run `ddt /path/to/target`
+
+#### The Hard Way: Old School
 
 1. Set up a python virtual environment with `python3 -m venv .venv`
 2. Enter the virtual environment with `source .venv/bin/activate`
 3. Run `python -m pip install -e .`
-4. Run `python ddt.py /PATH/TO/TARGET`
+4. Run `ddt /path/to/target`
 5. Remember to run `exit` when you're done to leave the python venv!
 
-### Command Line Flags
+## Help Commands
+
+```bash
+usage: Tokenizer [-h] [-c CONFIG] [-v] [-g] [-d] [-s] [-i] [-r] [-m MODEL] [-o OUTPUT] [--json | --html] [--exclude EXCLUDE | --include INCLUDE] directory
+
+Crawls a given directory, counts the number of tokens per filetype in the project and returns a per-type total and grand total
+
+positional arguments:
+  directory             the relative or absolute path to the directory you wish to scan
+
+options:
+  -h, --help            show this help message and exit
+  -v, --verbose         set to increase logging to console
+  -g, --include-gitignore
+                        include files and directories found in the .gitignore file
+  -d, --include-dotfiles
+                        include files and directories beginning with a dot (.)
+  -s, --include-symlinks
+                        include files and directories symlinked from outside the target directory
+  -i, --include-images  include image files found within the directory
+  -r, --resolve-paths   resolve relative file paths to their absolute location
+  -m, --model           specify a model to use for token approximation. default is 'gpt-4o'
+  -o, --output OUTPUT   redirect output from STDOUT to a file at the location specified.
+  --json                save the results of the scan to a json file
+  --html                save the results of the scan to a HTML file
+  --exclude EXCLUDE     specify file formats to ignore from counting. this flag may be set multiple times for multiple entries. cannot be set if including files
+  --include INCLUDE     specify file formats to include when counting. this flag may be set multiple times for multiple entries. cannot be set if excluding files
+
+Made with <3 by 0x4D5352
+```
+
+## Command Line Flags
 
 Beyond the traditional `-h` and `-v` flags, DDT can be configured a number of ways:
 
@@ -58,12 +109,6 @@ token counts for older models, such as gpt-4 or text-davinci-003,
 pass the corresponding model name into the `-m` or `--model` flag.
 If the model you wish to test is not listed, reference the model list from
 [this](https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb) OpenAI Cookbook.
-
-### Config File
-
-If you wish to configure DDT without passing multiple command line flags, you
-can provide a configuration file in JSON format with the `--config /path/to/config.json`
-flag. Any value not specified within the config will use the default arguments.
 
 ## What are Tokens?
 
@@ -101,41 +146,8 @@ will begin behaving in unintended ways:
 - The LLM might hallucinate information that no longer appears in the data.
 - LLM Agents might lose functionality or send malformed input to its actions.
 
-The current generation of LLMs (e.g. GPT-4o, GPT-o1, Claude Sonnet 3.5) have a
-context window of 128,000 or 200,000 tokens. Future models are expected to have
-between 500,000 and 1,000,000 tokens. The upper limit is currently unknown.
+Context windows vary in size, with current models handling anywhere from 1,000
+to 1,000,000 tokens. Even with the larger windows, it is common to limit the
+maximum number of tokens to reduce compute requirements and increase speed.
 
 For reference: [curl](https://github.com/curl/curl) is approximately 1,750,000 tokens.
-
-## Help Commands
-
-```bash
-usage: Tokenizer [-h] [-c CONFIG] [-v] [-g] [-d] [-s] [-i] [-r] [-m {gpt-4,text-davinci-003,gpt-4o}] [-o OUTPUT] [--json | --html] [--exclude EXCLUDE | --include INCLUDE] directory
-
-Crawls a given directory, counts the number of tokens per filetype in the project and returns a per-type total and grand total
-
-positional arguments:
-  directory             the relative or absolute path to the directory you wish to scan
-
-options:
-  -h, --help            show this help message and exit
-  -c, --config CONFIG   Load one or more configurations from a file. Unset configs will use defaults.
-  -v, --verbose         set to increase logging to console
-  -g, --include-gitignore
-                        include files and directories found in the .gitignore file
-  -d, --include-dotfiles
-                        include files and directories beginning with a dot (.)
-  -s, --include-symlinks
-                        include files and directories symlinked from outside the target directory
-  -i, --include-images  include image files found within the directory
-  -r, --resolve-paths   resolve relative file paths to their absolute location
-  -m, --model {gpt-4,text-davinci-003,gpt-4o}
-                        specify a model to use for token approximation. default is 'gpt-4o'
-  -o, --output OUTPUT   redirect output from STDOUT to a file at the location specified.
-  --json                save the results of the scan to a json file
-  --html                save the results of the scan to a HTML file
-  --exclude EXCLUDE     specify file formats to ignore from counting. this flag may be set multiple times for multiple entries. cannot be set if including files
-  --include INCLUDE     specify file formats to include when counting. this flag may be set multiple times for multiple entries. cannot be set if excluding files
-
-Made with <3 by 0x4D5352
-```

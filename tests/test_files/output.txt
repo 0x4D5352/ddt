@@ -1,0 +1,21 @@
+ignored:
+=========================
+.png files ignored:
+*************************
+assets/contextwindow.png
+assets/beemovie.png
+=========================
+.gif files ignored:
+*************************
+assets/demo.gif
+=========================
+totals:
+-------------------------
+.tape tokens:
+*************************
+demo.tape: 830 tokens
+.........................
+.tape total: 830 tokens
+-------------------------
+grand total: 830
+remaining tokens given 128K context window: 127,170

@@ -1,5 +1,5 @@
 [project]
-name = "tokenizer"
+name = "ddt"
 version = "0.1.0"
 description = "A CLI tool that crawls a directory and counts the tokens per filetype"
 readme = "README.md"
@@ -10,3 +10,30 @@ dependencies = [
     "pillow>=11.1.0",
     "tiktoken>=0.9.0",
 ]
+
+[project.scripts]
+ddt = "ddt.__main__:main"
+
+[build-system]
+requires = ["hatchling >= 1.26"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "basedpyright>=1.29.4",
+    "hatchling>=1.27.0",
+    "pytest>=8.4.0",
+    "pytest-cov>=6.2.1",
+    "pytest-xdist>=3.7.0",
+    "ruff>=0.11.13",
+    "ty>=0.0.1a8",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ddt"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]

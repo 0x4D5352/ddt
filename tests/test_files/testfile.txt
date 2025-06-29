@@ -1,0 +1,1 @@
+This file is a test. It has text in it for token counting. It should have 22 tokens.
