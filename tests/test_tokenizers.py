@@ -48,6 +48,8 @@ def test_calculate_known_image_tokens():
     KNOWN_IMAGE_TOKENS = [
         {"width": 1024, "height": 1024, "total": 765},
         {"width": 2048, "height": 4096, "total": 1105},
+        {"width": 4096, "height": 2048, "total": 1105},
+
     ]
 
     for case in KNOWN_IMAGE_TOKENS:

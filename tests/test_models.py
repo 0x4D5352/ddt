@@ -120,6 +120,8 @@ def test_tokencounter_add_exclusions():
         [],
     )
     tc = models.TokenCounter(cfg)
+    tc.add_exclusions([])
+    assert tc.included_files == set()
     exclusions = ["lock"]
     tc.add_exclusions(exclusions)
     assert tc.excluded_files == {Path("uv.lock").resolve()}
@@ -141,6 +143,8 @@ def test_tokencounter_add_inclusions():
         [],
     )
     tc = models.TokenCounter(cfg)
+    tc.add_inclusions([])
+    assert tc.included_files == set()
     inclusions = ["lock"]
     tc.add_inclusions(inclusions)
     assert tc.included_files == {Path("uv.lock").resolve()}
@@ -162,6 +166,8 @@ def test_tokencounter_count_text_file():
         [],
     )
     tc = models.TokenCounter(cfg)
+    count = tc.count_text_file(Path("assets/demo.gif"))
+    assert count == 0
     count = tc.count_text_file(Path("assets/demo.tape"))
     assert count == 830
 
@@ -182,6 +188,8 @@ def test_tokencounter_count_image_file():
         [],
     )
     tc = models.TokenCounter(cfg)
+    count = tc.count_image_file(Path("assets/demo.tape"))
+    assert count == 0
     count = tc.count_image_file(Path("assets/demo.gif"))
     assert count == 1105
 
@@ -209,7 +217,7 @@ def test_tokencounter_add_to_ignored():
 
 def test_tokencounter_filter_file():
     cfg = config.Config(
-        Path("."),
+        Path("./tests/test_files"),
         True,
         False,
         False,
@@ -224,46 +232,48 @@ def test_tokencounter_filter_file():
     )
     tc = models.TokenCounter(cfg)
 
-    inclusions = ["py"]
+    inclusions = ["json"]
     tc.add_inclusions(inclusions)
-    not_included = Path("README.md")
-    filtered = tc.filter_file(not_included)
-    assert filtered
-    assert tc.ignored_files[".md"] == [not_included]
+    not_included = Path("output.json")
+    inclusion_filtered = tc.filter_file(not_included)
+    assert inclusion_filtered
+    assert tc.ignored_files[".json"] == [not_included]
     tc.included_files = set()
     tc.ignored_files = dict()
 
-    exclusions = ["lock"]
+    # TODO: figure out why this isn't getting flagged
+    exclusions = ["html"]
     tc.add_exclusions(exclusions)
-    excluded_file = Path("uv.lock")
-    filtered = tc.filter_file(excluded_file)
-    assert filtered
-    assert tc.ignored_files[".lock"] == [excluded_file]
+    excluded_file = Path("output.html")
+    exclusion_filtered = tc.filter_file(excluded_file)
+    assert exclusion_filtered
+    assert tc.ignored_files[".html"] == [excluded_file]
     tc.excluded_files = set()
     tc.ignored_files = dict()
 
     # dotfiles
     dotfile = Path(".gitignore")
-    filtered = tc.filter_file(dotfile)
-    assert filtered
+    dotfile_filtered = tc.filter_file(dotfile)
+    assert dotfile_filtered
     assert [dotfile] in tc.ignored_files.values()
     tc.ignored_files = dict()
 
+    # TODO: figure out why this isn't getting flagged
     # gitignore
     # TODO: replace with pytest temp dir stuff
     with open("gitignored.json", "w") as file:
         _ = file.write('{"foo": "bar"}')
     gitignored = Path("gitignored.json")
-    filtered = tc.filter_file(gitignored)
-    assert filtered
+    gitignore_filtered = tc.filter_file(gitignored)
+    assert gitignore_filtered
     assert tc.ignored_files[".json"] == [gitignored]
     tc.ignored_files = dict()
     os.remove(gitignored)
 
     # symlinks
-    symlinked = Path("tests/test_files/README.md")
-    filtered = tc.filter_file(symlinked)
-    assert filtered
+    symlinked = Path("README.md")
+    symlink_filtered = tc.filter_file(symlinked)
+    assert symlink_filtered
     assert tc.ignored_files[".md"] == [symlinked]
 
 
@@ -274,7 +284,7 @@ def test_tokencounter_parse_file():
         False,
         False,
         False,
-        False,
+        True,
         False,
         Model("gpt-4o"),
         sys.stdout,
@@ -287,11 +297,15 @@ def test_tokencounter_parse_file():
     extension, token_count = tc.parse_file(file)
     assert extension == ".txt"
     assert token_count == 22
+    image = Path("assets/contextwindow.png")
+    extension, token_count = tc.parse_file(image)
+    assert extension == ".png"
+    assert token_count == 765
 
 
 def test_tokencounter_parse_files():
     cfg = config.Config(
-        Path("assets"),
+        Path("tests/test_files"),
         True,
         False,
         False,
@@ -306,17 +320,19 @@ def test_tokencounter_parse_files():
     )
     tc = models.TokenCounter(cfg)
     tc.parse_files()
-    assert tc.ignored_files[".png"] == [
-        Path("assets/contextwindow.png"),
-        Path("assets/beemovie.png"),
+    assert tc.ignored_files[".jpeg"] == [
+        Path("tests/test_files/test_image.jpeg"),
     ]
-    assert tc.ignored_files[".gif"] == [Path("assets/demo.gif")]
-
-    assert tc.scanned_files[".tape"].files == [
-        {"file": Path("assets/demo.tape").name, "tokens": 830}
+    assert tc.ignored_files[""] == [
+        Path("tests/test_files/.gitignore"),
+        Path("tests/test_files/subtest/.invisible"),
     ]
-    assert tc.total == 830
 
+    assert tc.scanned_files[".txt"].files == [
+        {"file": Path("tests/test_files/testfile.txt").name, "tokens": 22},
+        {"file": Path("tests/test_files/output.txt").name, "tokens": 89},
+    ]
+    assert tc.total == 111
 
 def test_tokencounter_grab_suffix():
     cfg = config.Config(
