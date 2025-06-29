@@ -1,6 +1,6 @@
 [project]
 name = "ddt"
-version = "0.1.0"
+version = "0.1.1"
 description = "A CLI tool that crawls a directory and counts the tokens per filetype"
 readme = "README.md"
 requires-python = ">=3.13"
