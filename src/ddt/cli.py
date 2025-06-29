@@ -76,6 +76,7 @@ def setup_argparse() -> argparse.ArgumentParser:
         help="redirect output from STDOUT to a file at the location specified.",
         type=argparse.FileType(mode="w", encoding="UTF-8"),
         default=sys.stdout,
+        deprecated=True,
     )
 
     output_type_group = parser.add_mutually_exclusive_group()
