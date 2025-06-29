@@ -18,6 +18,9 @@ Language Model to hold the entirety of a given set of files in its context windo
 
 ### Binary Distribution
 
+> [!NOTE]
+> Binary distribution is not working yet, Please follow "Building from source" below.
+
 #### The Easy Way: pipx
 
 1. Install with pipx with the command `pipx install ddt`
