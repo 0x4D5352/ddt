@@ -59,7 +59,7 @@ class TokenCounter:
             "total": self.total,
         }
 
-    def _to_text(self) -> str:
+    def to_text(self) -> str:
         """
         Converts TokenCounter to an ASCII-style table.
         """
@@ -92,7 +92,7 @@ class TokenCounter:
         )
         return result
 
-    def _to_html(self) -> str:
+    def to_html(self) -> str:
         """
         Converts TokenCounter to an HTML table.
         """
@@ -303,9 +303,9 @@ class TokenCounter:
                 case "json":
                     json.dump(self, f, cls=TokenCounterEncoder, indent=2)
                 case "html":
-                    _ = f.write(self._to_html())
+                    _ = f.write(self.to_html())
                 case _:
-                    _ = f.write(self._to_text())
+                    _ = f.write(self.to_text())
 
 
 class TokenCounterEncoder(json.JSONEncoder):

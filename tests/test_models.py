@@ -74,7 +74,7 @@ def test_tokencounter_to_text():
         [],
     )
     tc = models.TokenCounter(cfg)
-    result = tc._to_text()
+    result = tc.to_text()
     assert "=========================\n" in result
     assert "ignored:" in result
     assert "total:" in result
@@ -96,7 +96,7 @@ def test_tokencounter_to_html():
         [],
     )
     tc = models.TokenCounter(cfg)
-    result = tc._to_html()
+    result = tc.to_html()
     assert "<!DOCTYPE html>" in result
     assert "Scanned files in" in result
     assert "<table>" in result
@@ -333,6 +333,7 @@ def test_tokencounter_parse_files():
         {"file": Path("tests/test_files/output.txt").name, "tokens": 89},
     ]
     assert tc.total == 111
+
 
 def test_tokencounter_grab_suffix():
     cfg = config.Config(
