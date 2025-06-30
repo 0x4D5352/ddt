@@ -45,8 +45,8 @@ class Config:
     gitignore: set[Path] = field(init=False)
 
     def __post_init__(self):
-        self.gitignore = self._parse_gitignore()
         self._setup_logging()
+        self.gitignore = self._parse_gitignore()
 
     # AI rewrote this function for me, need to replace.
     def _parse_gitignore(self) -> set[Path]:
@@ -69,6 +69,11 @@ class Config:
         Returns:
             Set[Path]: A set of Paths that match the patterns specified in the .gitignore file.
         """
+
+        if not self.root.is_dir():
+            logging.info(f"{self.root} is not a directory, exiting.")
+            exit(1)
+
         ignored: set[Path] = set()
         gitignore_file: Path = self.root / ".gitignore"
 
