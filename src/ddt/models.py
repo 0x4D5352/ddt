@@ -2,6 +2,7 @@ import mimetypes
 import logging
 from pathlib import Path
 from typing import Any
+from typing import override as orr
 from . import tokenizer
 from .config import Config
 from PIL import Image
@@ -313,6 +314,8 @@ class TokenCounterEncoder(json.JSONEncoder):
     A custom token encoder that overrides the default() method to allow encoding of the TokenCounter to JSON
     """
 
+    # was having some issues with the @override decorator, this is a workaround
+    @orr
     def default(self, o: Any) -> Any:
         if isinstance(o, TokenCounter) or isinstance(o, FileCategory):
             return o.to_dict()
