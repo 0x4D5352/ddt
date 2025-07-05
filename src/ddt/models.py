@@ -298,7 +298,8 @@ class TokenCounter:
         """
         Writes the contents of the tokenencoder to the eoutput.
         """
-        assert self.config.output
+        if not self.config.output:
+            exit(1)
         with self.config.output as f:
             match self.config.output_format:
                 case "json":
