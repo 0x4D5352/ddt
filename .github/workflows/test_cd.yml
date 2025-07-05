@@ -2,9 +2,12 @@ name: CD
 on: [push]
 
 jobs:
-  uv-setup:
+  uv-deploy:
     name: python
     runs-on: ubuntu-latest
+    environment: Test
+    permissions:
+      id-token: write
 
     steps:
       - uses: actions/checkout@v4
@@ -21,5 +24,7 @@ jobs:
       - name: Build the project
         run: uv build
 
-      - name: Publish to pypi
-        run: uv publish --index testpypi
+      - name: Publish package distribution to TestPyPi
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy
