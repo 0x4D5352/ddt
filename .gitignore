@@ -175,6 +175,7 @@ cython_debug/
 
 # output file types
 *.json
+!.basedpyright/baseline.json
 !config.json
 
 # detritus
