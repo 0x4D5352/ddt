@@ -147,7 +147,7 @@ def test_tokencounter_add_inclusions():
     assert tc.included_files == set()
     inclusions = ["tape"]
     tc.add_inclusions(inclusions)
-    assert tc.included_files == {Path("demo.tape").resolve()}
+    assert tc.included_files == {Path("assets/demo.tape").resolve()}
 
 
 def test_tokencounter_count_text_file():
