@@ -1,0 +1,38 @@
+name: Example
+on: [push]
+
+jobs:
+  uv-setup:
+    name: python
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install the project
+        run: uv sync --locked --all-extras --dev
+
+      - name: Run tests
+        run: uv run pytest
+
+      - name: Check coverage
+        run: uv run pytest --cov=. --cov-report html
+
+      - name: Run Linting
+        run: uv run ruff check --output-format=github --target-version=py313
+
+      - name: Run format
+        run: uv run ruff format --diff --target-version=py313
+
+      - name: Run Ty
+        run: uv run ty check --python-version=3.13
+
+      - name: Run basdpyright
+        run: uv run basedpyright --pythonversion=3.13
+
+      - name: Run Bandit
+        run: uv run bandit -r src/ -b .banditbaseline
+
