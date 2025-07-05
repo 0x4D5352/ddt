@@ -1,8 +1,5 @@
 name: CD
-on:
-  push:
-    branches:
-      - refactor
+on: [push]
 
 jobs:
   uv-setup:
