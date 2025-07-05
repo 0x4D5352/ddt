@@ -34,7 +34,7 @@ jobs:
         run: uv run ty check --python-version=3.13
 
       - name: Run basdpyright
-        run: uv run basedpyright --pythonversion=3.13 --baselinefile .basedpyrightbaseline.json
+        run: uv run basedpyright --pythonversion=3.13
 
       - name: Run Bandit
         run: uv run bandit -r src/ -b .banditbaseline
