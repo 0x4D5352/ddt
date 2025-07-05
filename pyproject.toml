@@ -20,6 +20,7 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
+    "bandit>=1.8.5",
     "basedpyright>=1.29.4",
     "hatchling>=1.27.0",
     "pytest>=8.4.0",
