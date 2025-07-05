@@ -21,9 +21,6 @@ jobs:
       - name: Run tests
         run: uv run pytest
 
-      - name: Check coverage
-        run: uv run pytest --cov=. --cov-report html
-
       - name: Run Linting
         run: uv run ruff check --output-format=github --target-version=py313
 
