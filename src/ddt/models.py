@@ -118,7 +118,7 @@ class TokenCounter:
         Args:
             exclusions (list[str]): The file extensions to be excluded.
         """
-        if len(exclusions) < 1:
+        if exclusions is None or len(exclusions) < 1:
             return
         for ext in exclusions:
             for file in self.config.root.glob(f"**/*.{ext}"):
@@ -131,7 +131,7 @@ class TokenCounter:
         Args:
             inclusions (list[str]): The file extensions to be included.
         """
-        if len(inclusions) < 1:
+        if inclusions is None or len(inclusions) < 1:
             return
         for ext in inclusions:
             for file in self.config.root.glob(f"**/*.{ext}"):
