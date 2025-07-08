@@ -116,6 +116,22 @@
                 }
             },
             {
+                "code": "reportUnnecessaryComparison",
+                "range": {
+                    "startColumn": 11,
+                    "endColumn": 29,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportUnnecessaryComparison",
+                "range": {
+                    "startColumn": 11,
+                    "endColumn": 29,
+                    "lineCount": 1
+                }
+            },
+            {
                 "code": "reportAny",
                 "range": {
                     "startColumn": 8,
