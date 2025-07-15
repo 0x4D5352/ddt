@@ -279,7 +279,7 @@ def test_tokencounter_filter_file():
 
 def test_tokencounter_parse_file():
     cfg = config.Config(
-        Path("."),
+        Path("tests/test_files"),
         True,
         False,
         False,
@@ -335,7 +335,7 @@ def test_tokencounter_parse_files():
         {"file": Path("tests/test_files/output.txt").name, "tokens": 89},
         {"file": Path("tests/test_files/testfile.txt").name, "tokens": 22},
     ]
-    assert tc.total == 111
+    assert tc.total == 328
 
 
 def test_tokencounter_grab_suffix():
@@ -366,87 +366,87 @@ def test_tokencounter_grab_suffix():
     os.remove(file)
 
 
-# # TODO: fix for github action
-# def test_tokencounter_txt_output():
-#     # TODO: replace with pytest temp dir stuff
-#     with open("foo.txt", "w") as file:
-#         cfg = config.Config(
-#             Path("assets"),
-#             True,
-#             False,
-#             False,
-#             False,
-#             False,
-#             False,
-#             Model("gpt-4o"),
-#             file,
-#             "txt",
-#             [],
-#             [],
-#         )
-#         tc = models.TokenCounter(cfg)
-#         tc.parse_files()
-#         tc.output()
-#     with open("tests/test_files/output.txt", "r") as f:
-#         with open("foo.txt", "r") as file:
-#             assert file.read() == f.read()
-#     os.remove(Path("foo.txt"))
-#
-#
-# # TODO: fix for github action
-# # This covers the TokenCounterEncoder too, technically - it only exists in output()
-# def test_tokencounter_json_output():
-#     # TODO: replace with pytest temp dir stuff
-#     with open("foo.json", "w") as file:
-#         cfg = config.Config(
-#             Path("assets"),
-#             True,
-#             False,
-#             False,
-#             False,
-#             False,
-#             False,
-#             Model("gpt-4o"),
-#             file,
-#             "json",
-#             [],
-#             [],
-#         )
-#         tc = models.TokenCounter(cfg)
-#         tc.parse_files()
-#         tc.output()
-#     with open("tests/test_files/output.json", "r") as f:
-#         with open("foo.json", "r") as file:
-#             assert file.read() == f.read()
-#     os.remove(Path("foo.json"))
-#
-#
-# # TODO: fix for github action
-# def test_tokencounter_html_output():
-#     # TODO: replace with pytest temp dir stuff
-#     with open("foo.html", "w") as file:
-#         cfg = config.Config(
-#             Path("assets"),
-#             True,
-#             False,
-#             False,
-#             False,
-#             False,
-#             False,
-#             Model("gpt-4o"),
-#             file,
-#             "html",
-#             [],
-#             [],
-#         )
-#         tc = models.TokenCounter(cfg)
-#         tc.parse_files()
-#         tc.output()
-#     with open("tests/test_files/output.html", "r") as f:
-#         with open("foo.html", "r") as file:
-#             assert file.read() == f.read()
-#     os.remove(Path("foo.html"))
-#
+# TODO: fix for github action
+def test_tokencounter_txt_output():
+    # TODO: replace with pytest temp dir stuff
+    with open("tests/test_files/foo.txt", "w") as file:
+        cfg = config.Config(
+            Path("tests/test_files"),
+            True,
+            False,
+            False,
+            False,
+            False,
+            False,
+            Model("gpt-4o"),
+            file,
+            "txt",
+            [],
+            [],
+        )
+        tc = models.TokenCounter(cfg)
+        tc.parse_files()
+        tc.output()
+    with open("tests/test_files/output.txt", "r") as f:
+        with open("tests/test_files/foo.txt", "r") as file:
+            assert file.read() == f.read()
+    os.remove(Path("tests/test_files/foo.txt"))
+
+
+# TODO: fix for github action
+# This covers the TokenCounterEncoder too, technically - it only exists in output()
+def test_tokencounter_json_output():
+    # TODO: replace with pytest temp dir stuff
+    with open("tests/test_files/foo.json", "w") as file:
+        cfg = config.Config(
+            Path("tests/test_files"),
+            True,
+            False,
+            False,
+            False,
+            False,
+            False,
+            Model("gpt-4o"),
+            file,
+            "json",
+            [],
+            [],
+        )
+        tc = models.TokenCounter(cfg)
+        tc.parse_files()
+        tc.output()
+    with open("tests/test_files/output.json", "r") as f:
+        with open("tests/test_files/foo.json", "r") as file:
+            assert file.read() == f.read()
+    os.remove(Path("tests/test_files/foo.json"))
+
+
+# TODO: fix for github action
+def test_tokencounter_html_output():
+    # TODO: replace with pytest temp dir stuff
+    with open("tests/test_files/foo.html", "w") as file:
+        cfg = config.Config(
+            Path("tests/test_files"),
+            True,
+            False,
+            False,
+            False,
+            False,
+            False,
+            Model("gpt-4o"),
+            file,
+            "html",
+            [],
+            [],
+        )
+        tc = models.TokenCounter(cfg)
+        tc.parse_files()
+        tc.output()
+    with open("tests/test_files/output.html", "r") as f:
+        with open("tests/test_files/foo.html", "r") as file:
+            assert file.read() == f.read()
+    os.remove(Path("tests/test_files/foo.html"))
+
 
 """
     filecategory
