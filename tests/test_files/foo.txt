@@ -3,6 +3,12 @@ ignored:
 .json files ignored:
 *************************
 tests/test_files/output.json
+tests/test_files/foo.json
+=========================
+.html files ignored:
+*************************
+tests/test_files/foo.html
+tests/test_files/output.html
 =========================
 .md files ignored:
 *************************
@@ -17,18 +23,14 @@ tests/test_files/test_image.jpeg
 tests/test_files/.gitignore
 tests/test_files/subtest/.invisible
 =========================
-.html files ignored:
-*************************
-tests/test_files/output.html
-=========================
 totals:
 -------------------------
 .txt tokens:
 *************************
 testfile.txt: 22 tokens
-output.txt: 132 tokens
+output.txt: 147 tokens
 .........................
-.txt total: 154 tokens
+.txt total: 169 tokens
 -------------------------
-grand total: 154
-remaining tokens given 128K context window: 127,846
+grand total: 169
+remaining tokens given 128K context window: 127,831
