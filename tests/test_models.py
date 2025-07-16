@@ -330,12 +330,8 @@ def test_tokencounter_parse_files():
 
     assert tc.scanned_files[".txt"].files == [
         {"file": Path("tests/test_files/testfile.txt").name, "tokens": 22},
-        {"file": Path("tests/test_files/output.txt").name, "tokens": 89},
-    ] or [
-        {"file": Path("tests/test_files/output.txt").name, "tokens": 89},
-        {"file": Path("tests/test_files/testfile.txt").name, "tokens": 22},
     ]
-    assert tc.total == 328
+    assert tc.total == 22
 
 
 def test_tokencounter_grab_suffix():
@@ -369,7 +365,7 @@ def test_tokencounter_grab_suffix():
 # TODO: fix for github action
 def test_tokencounter_txt_output():
     # TODO: replace with pytest temp dir stuff
-    with open("tests/test_files/foo.txt", "w") as file:
+    with open("tests/foo.txt", "w") as file:
         cfg = config.Config(
             Path("tests/test_files"),
             True,
@@ -387,17 +383,17 @@ def test_tokencounter_txt_output():
         tc = models.TokenCounter(cfg)
         tc.parse_files()
         tc.output()
-    with open("tests/test_files/output.txt", "r") as f:
-        with open("tests/test_files/foo.txt", "r") as file:
+    with open("tests/output.txt", "r") as f:
+        with open("tests/foo.txt", "r") as file:
             assert file.read() == f.read()
-    os.remove(Path("tests/test_files/foo.txt"))
+    os.remove(Path("tests/foo.txt"))
 
 
 # TODO: fix for github action
 # This covers the TokenCounterEncoder too, technically - it only exists in output()
 def test_tokencounter_json_output():
     # TODO: replace with pytest temp dir stuff
-    with open("tests/test_files/foo.json", "w") as file:
+    with open("tests/foo.json", "w") as file:
         cfg = config.Config(
             Path("tests/test_files"),
             True,
@@ -415,16 +411,16 @@ def test_tokencounter_json_output():
         tc = models.TokenCounter(cfg)
         tc.parse_files()
         tc.output()
-    with open("tests/test_files/output.json", "r") as f:
-        with open("tests/test_files/foo.json", "r") as file:
+    with open("tests/output.json", "r") as f:
+        with open("tests/foo.json", "r") as file:
             assert file.read() == f.read()
-    os.remove(Path("tests/test_files/foo.json"))
+    os.remove(Path("tests/foo.json"))
 
 
 # TODO: fix for github action
 def test_tokencounter_html_output():
     # TODO: replace with pytest temp dir stuff
-    with open("tests/test_files/foo.html", "w") as file:
+    with open("tests/foo.html", "w") as file:
         cfg = config.Config(
             Path("tests/test_files"),
             True,
@@ -442,10 +438,10 @@ def test_tokencounter_html_output():
         tc = models.TokenCounter(cfg)
         tc.parse_files()
         tc.output()
-    with open("tests/test_files/output.html", "r") as f:
-        with open("tests/test_files/foo.html", "r") as file:
+    with open("tests/output.html", "r") as f:
+        with open("tests/foo.html", "r") as file:
             assert file.read() == f.read()
-    os.remove(Path("tests/test_files/foo.html"))
+    os.remove(Path("tests/foo.html"))
 
 
 """
