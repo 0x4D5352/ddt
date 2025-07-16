@@ -177,6 +177,11 @@ cython_debug/
 *.json
 !.basedpyright/baseline.json
 !config.json
+!tests/output.json
+*.txt
+!tests/*.txt
+*.html
+tests/output.html
 
 # detritus
 .DS_Store

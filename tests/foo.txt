@@ -1,6 +1,0 @@
-ignored:
-=========================
-totals:
--------------------------
-grand total: 0
-remaining tokens given 128K context window: 128,000

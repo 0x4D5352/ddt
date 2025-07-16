@@ -1,0 +1,34 @@
+{
+  "root": "tests/test_files",
+  "all_files": [
+    "README.md",
+    "test_image.jpeg",
+    ".gitignore",
+    "testfile.txt",
+    ".invisible"
+  ],
+  "ignored_files": {
+    ".md": [
+      "README.md"
+    ],
+    ".jpeg": [
+      "test_image.jpeg"
+    ],
+    "": [
+      ".gitignore",
+      ".invisible"
+    ]
+  },
+  "scanned_files": {
+    ".txt": {
+      "total": 22,
+      "files": [
+        {
+          "file": "testfile.txt",
+          "tokens": 22
+        }
+      ]
+    }
+  },
+  "total": 22
+}

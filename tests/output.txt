@@ -1,15 +1,5 @@
 ignored:
 =========================
-.json files ignored:
-*************************
-tests/test_files/output.json
-tests/test_files/foo.json
-=========================
-.html files ignored:
-*************************
-tests/test_files/foo.html
-tests/test_files/output.html
-=========================
 .md files ignored:
 *************************
 tests/test_files/README.md
@@ -28,9 +18,8 @@ totals:
 .txt tokens:
 *************************
 testfile.txt: 22 tokens
-output.txt: 147 tokens
 .........................
-.txt total: 169 tokens
+.txt total: 22 tokens
 -------------------------
-grand total: 169
-remaining tokens given 128K context window: 127,831
+grand total: 22
+remaining tokens given 128K context window: 127,978
