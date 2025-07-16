@@ -181,7 +181,7 @@ cython_debug/
 *.txt
 !tests/*.txt
 *.html
-tests/output.html
+!tests/output.html
 
 # detritus
 .DS_Store
