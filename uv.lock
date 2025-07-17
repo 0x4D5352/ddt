@@ -123,7 +123,7 @@ wheels = [
 ]
 
 [[package]]
-name = "ddt"
+name = "ddt-llm"
 version = "0.1.1"
 source = { editable = "." }
 dependencies = [

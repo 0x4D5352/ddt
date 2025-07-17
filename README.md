@@ -18,18 +18,10 @@ Language Model to hold the entirety of a given set of files in its context windo
 
 ### Binary Distribution
 
-> [!NOTE]
-> Binary distribution is not working yet, Please follow "Building from source" below.
-
-#### The Easy Way: pipx
-
-1. Install with pipx with the command `pipx install ddt`
+1. Install with pipx with the command `pipx install ddt-llm`
 2. Run `ddt /path/to/target`
 
-#### The Less Easy Way: pip
-
-1. Install with pip with the command `pip install ddt`
-2. Run `ddt /path/to/target`
+Installation via `pip` is also possible, but pipx is recommended.
 
 ### Building from source
 
