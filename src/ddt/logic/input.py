@@ -21,7 +21,7 @@ Logic:
         - if JSON or CSV, repeat step 2 for each item
         - if text, split on space and repeat step 2 for each item
         - for both, count length before iterating and reject if over some arbitrary limit
-        - for both, track Not A File count. 
+        - for both, track Not A File count.
             - If exceeded, pass original results to TokenCounter.Parser
 3. Take final list from 2b and pass a set of all files to FileTree.All Files
 """
