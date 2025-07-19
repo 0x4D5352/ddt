@@ -4,7 +4,7 @@ All Files - a set of files (Path)
 Excluded files - a list/set of files (Path)
 Included files - a list/set of files (Path)
 
-Logic: 
+Logic:
 take a FileTree.All Files and separate it out to Excluded Files and Included Files
 
 Input:
