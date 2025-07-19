@@ -76,7 +76,6 @@ def setup_argparse() -> argparse.ArgumentParser:
         help="redirect output from STDOUT to a file at the location specified.",
         type=argparse.FileType(mode="w", encoding="UTF-8"),
         default=sys.stdout,
-        deprecated=True,
     )
 
     output_type_group = parser.add_mutually_exclusive_group()
@@ -84,11 +83,13 @@ def setup_argparse() -> argparse.ArgumentParser:
         "--json",
         action="store_true",
         help="save the results of the scan to a json file",
+        deprecated=True,
     )
     _ = output_type_group.add_argument(
         "--html",
         action="store_true",
         help="save the results of the scan to a HTML file",
+        deprecated=True,
     )
 
     input_filter_group = parser.add_mutually_exclusive_group()
