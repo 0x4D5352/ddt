@@ -15,7 +15,7 @@ def setup_argparse() -> argparse.ArgumentParser:
     )
 
     _ = parser.add_argument(
-        "target",
+        "root",
         help="the relative or absolute path to the directory or file you wish to scan",
         type=Path,
     )

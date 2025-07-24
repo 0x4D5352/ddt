@@ -31,7 +31,7 @@ def main() -> None:
         sys.exit(0)
     p = cli.setup_argparse()
     args = p.parse_args()
-    target: Path = args.target
+    target: Path = args.root
     if not target.exists():
         print(f"File '{target.name}' not found.", file=sys.stderr)
         sys.exit(1)
