@@ -7,6 +7,7 @@ from . import cli, config, models, tokenizer
 Main function
 """
 
+
 # h/t to pedramamini: https://gist.github.com/pedramamini/ae9a881b13d89faf0a46d43f0b30bc7d
 def read_stdin():
     try:
@@ -14,14 +15,19 @@ def read_stdin():
     except AttributeError:
         return sys.stdin.read()
 
+
 def read_file(path: Path):
     with open(path, "r", encoding="utf-8", errors="ignore") as f:
         return f.read()
 
+
 def main() -> None:
     if len(sys.argv) == 0:
         standard_input = read_stdin()
-        print(tokenizer.calculate_text_tokens(standard_input, tokenizer.GPT_4O),file=sys.stdout)
+        print(
+            tokenizer.calculate_text_tokens(standard_input, tokenizer.GPT_4O),
+            file=sys.stdout,
+        )
         sys.exit(0)
     p = cli.setup_argparse()
     args = p.parse_args()
@@ -32,7 +38,7 @@ def main() -> None:
     if target.is_file():
         file = read_file(target)
         model = args.model
-        print(tokenizer.calculate_text_tokens(file,model))
+        print(tokenizer.calculate_text_tokens(file, model))
 
     cfg = config.generate_config(vars(args))
 
