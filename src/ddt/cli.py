@@ -3,6 +3,17 @@ import argparse
 import sys
 from . import tokenizer
 
+# h/t to pedramamini: https://gist.github.com/pedramamini/ae9a881b13d89faf0a46d43f0b30bc7d
+def read_stdin():
+    try:
+        return sys.stdin.buffer.read().decode("utf-8", errors="ignore")
+    except AttributeError:
+        return sys.stdin.read()
+
+
+def read_file(path: Path):
+    with open(path, "r", encoding="utf-8", errors="ignore") as f:
+        return f.read()
 
 def setup_argparse() -> argparse.ArgumentParser:
     """
