@@ -2,6 +2,7 @@ import sys
 from io import StringIO
 from ddt import __main__
 
+
 def test_stdin():
     og_stdin = sys.stdin
     mock_stdin = "Hello This Is A String Of Text"

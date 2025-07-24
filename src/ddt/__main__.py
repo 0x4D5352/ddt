@@ -8,8 +8,6 @@ Main function
 """
 
 
-
-
 def main() -> None:
     if len(sys.argv) == 0:
         standard_input = cli.read_stdin()
