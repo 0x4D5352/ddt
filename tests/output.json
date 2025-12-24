@@ -1,6 +1,7 @@
 {
-  "root": "tests/test_files",
+  "root": "/Users/mussar/workspace/github.com/0x4D5352/ddt/tests/test_files",
   "all_files": [
+    "emptyfile.log",
     "README.md",
     "test_image.jpeg",
     ".gitignore",
@@ -20,6 +21,15 @@
     ]
   },
   "scanned_files": {
+    ".log": {
+      "total": 0,
+      "files": [
+        {
+          "file": "emptyfile.log",
+          "tokens": 0
+        }
+      ]
+    },
     ".txt": {
       "total": 22,
       "files": [

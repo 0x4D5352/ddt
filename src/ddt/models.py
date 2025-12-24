@@ -239,7 +239,7 @@ class TokenCounter:
                         token_counts = self.count_image_file(file)
                     else:
                         self.add_to_ignored(file)
-                        return "", 0
+                        return "", -1
                 case _:
                     # currently assuming everything is a text file if it's not an image
                     token_counts = self.count_text_file(file)
@@ -264,9 +264,8 @@ class TokenCounter:
                 continue
 
             file_extension, token_counts = self.parse_file(file)
-
-            # TODO: handle the case of empty files - right now we're treating empty and error as the same
-            if token_counts == 0:
+            # handling images (maybe temporarily)
+            if token_counts < 0:
                 continue
 
             if file_extension not in self.scanned_files:

@@ -4,6 +4,7 @@ version = "0.1.4"
 description = "A CLI tool that crawls a directory and counts the tokens per filetype"
 readme = "README.md"
 requires-python = ">=3.13, <3.14"
+
 dependencies = [
     "jinja2>=3.1.6",
     "openai>=1.63.2",

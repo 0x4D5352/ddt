@@ -1,3 +1,18 @@
+ignored:
+=========================
+.md files ignored:
+*************************
+tests/test_files/README.md
+=========================
+.jpeg files ignored:
+*************************
+tests/test_files/test_image.jpeg
+=========================
+ files ignored:
+*************************
+tests/test_files/.gitignore
+tests/test_files/subtest/.invisible
+=========================
 totals:
 -------------------------
 .log tokens:
