@@ -1,5 +1,5 @@
 {
-  "root": "tests/test_files",
+  "root": "/Users/mussar/workspace/github.com/0x4D5352/ddt-html-bugfix/tests/test_files",
   "all_files": [
     "README.md",
     "test_image.jpeg",
