@@ -181,6 +181,7 @@ cython_debug/
 *.txt
 !tests/*.txt
 *.html
+!src/ddt/templates/template.html
 !tests/output.html
 
 # detritus

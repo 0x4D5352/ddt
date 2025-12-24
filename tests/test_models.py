@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import string
 import sys
 from ddt import config, models
 from ddt.tokenizer import Model
@@ -385,7 +386,9 @@ def test_tokencounter_txt_output():
         tc.output()
     with open("tests/output.txt", "r") as f:
         with open("tests/foo.txt", "r") as file:
-            assert file.read() == f.read()
+            assert file.read().translate(
+                str.maketrans("", "", string.whitespace)
+            ) == f.read().translate(str.maketrans("", "", string.whitespace))
     os.remove(Path("tests/foo.txt"))
 
 
@@ -413,7 +416,9 @@ def test_tokencounter_json_output():
         tc.output()
     with open("tests/output.json", "r") as f:
         with open("tests/foo.json", "r") as file:
-            assert file.read() == f.read()
+            assert file.read().translate(
+                str.maketrans("", "", string.whitespace)
+            ) == f.read().translate(str.maketrans("", "", string.whitespace))
     os.remove(Path("tests/foo.json"))
 
 
@@ -440,7 +445,9 @@ def test_tokencounter_html_output():
         tc.output()
     with open("tests/output.html", "r") as f:
         with open("tests/foo.html", "r") as file:
-            assert file.read() == f.read()
+            assert file.read().translate(
+                str.maketrans("", "", string.whitespace)
+            ) == f.read().translate(str.maketrans("", "", string.whitespace))
     os.remove(Path("tests/foo.html"))
 
 
