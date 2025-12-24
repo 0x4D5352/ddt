@@ -2,16 +2,16 @@ ignored:
 =========================
 .md files ignored:
 *************************
-/Users/mussar/workspace/github.com/0x4D5352/ddt-html-bugfix/tests/test_files/README.md
+tests/test_files/README.md
 =========================
 .jpeg files ignored:
 *************************
-/Users/mussar/workspace/github.com/0x4D5352/ddt-html-bugfix/tests/test_files/test_image.jpeg
+tests/test_files/test_image.jpeg
 =========================
  files ignored:
 *************************
-/Users/mussar/workspace/github.com/0x4D5352/ddt-html-bugfix/tests/test_files/.gitignore
-/Users/mussar/workspace/github.com/0x4D5352/ddt-html-bugfix/tests/test_files/subtest/.invisible
+tests/test_files/.gitignore
+tests/test_files/subtest/.invisible
 =========================
 totals:
 -------------------------
