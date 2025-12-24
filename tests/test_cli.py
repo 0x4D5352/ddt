@@ -1,4 +1,3 @@
-import os
 import pytest
 from pathlib import Path
 from ddt import cli, tokenizer
@@ -50,15 +49,14 @@ def test_model_choices_arg():
         _ = parser.parse_args([".", "-m", "invalid_model"])
 
 
-def test_output_arg():
+def test_output_arg(tmp_path):
     parser = cli.setup_argparse()
-    # TODO: replace with pytest temp dir stuff
-    with open("test.txt", "w") as file:
-        args = parser.parse_args(["--output", "test.txt", "src"])
-        assert args.output.name == file.name
-        length = args.output.write("foo")
-        assert length == 3
-        os.remove(file.name)
+    output_path = tmp_path / "test.txt"
+    args = parser.parse_args(["--output", str(output_path), "src"])
+    assert Path(args.output.name) == output_path
+    length = args.output.write("foo")
+    assert length == 3
+    args.output.close()
     with pytest.raises(SystemExit):
         _ = parser.parse_args([".", "-o", "src/"])
 

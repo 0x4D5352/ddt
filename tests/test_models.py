@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 import string
 import sys
@@ -216,7 +215,7 @@ def test_tokencounter_add_to_ignored():
     assert file in tc.ignored_files[".md"]
 
 
-def test_tokencounter_filter_file():
+def test_tokencounter_filter_file(tmp_path):
     cfg = config.Config(
         Path("./tests/test_files"),
         True,
@@ -261,15 +260,12 @@ def test_tokencounter_filter_file():
 
     # TODO: figure out why this isn't getting flagged
     # gitignore
-    # TODO: replace with pytest temp dir stuff
-    with open("gitignored.json", "w") as file:
-        _ = file.write('{"foo": "bar"}')
-    gitignored = Path("gitignored.json")
+    gitignored = tmp_path / "gitignored.json"
+    gitignored.write_text('{"foo": "bar"}')
     gitignore_filtered = tc.filter_file(gitignored)
     assert gitignore_filtered
     assert tc.ignored_files[".json"] == [gitignored]
     tc.ignored_files = dict()
-    os.remove(gitignored)
 
     # symlinks
     symlinked = Path("README.md")
@@ -335,7 +331,7 @@ def test_tokencounter_parse_files():
     assert tc.total == 22
 
 
-def test_tokencounter_grab_suffix():
+def test_tokencounter_grab_suffix(tmp_path):
     cfg = config.Config(
         Path("assets"),
         True,
@@ -354,19 +350,16 @@ def test_tokencounter_grab_suffix():
     file = Path("README.md")
     suffix = tc.grab_suffix(file)
     assert suffix == ".md"
-    # TODO: replace with pytest temp dir stuff
-    with open("foobar.tar.gz", "w") as f:
-        _ = f.write("hello mom")
-    file = Path("foobar.tar.gz")
+    file = tmp_path / "foobar.tar.gz"
+    file.write_text("hello mom")
     suffix = tc.grab_suffix(file)
     assert suffix == ".tar.gz"
-    os.remove(file)
 
 
 # TODO: fix for github action
-def test_tokencounter_txt_output():
-    # TODO: replace with pytest temp dir stuff
-    with open("tests/foo.txt", "w") as file:
+def test_tokencounter_txt_output(tmp_path):
+    output_path = tmp_path / "foo.txt"
+    with open(output_path, "w") as file:
         cfg = config.Config(
             Path("tests/test_files"),
             True,
@@ -385,18 +378,17 @@ def test_tokencounter_txt_output():
         tc.parse_files()
         tc.output()
     with open("tests/output.txt", "r") as f:
-        with open("tests/foo.txt", "r") as file:
+        with open(output_path, "r") as file:
             assert file.read().translate(
                 str.maketrans("", "", string.whitespace)
             ) == f.read().translate(str.maketrans("", "", string.whitespace))
-    os.remove(Path("tests/foo.txt"))
 
 
 # TODO: fix for github action
 # This covers the TokenCounterEncoder too, technically - it only exists in output()
-def test_tokencounter_json_output():
-    # TODO: replace with pytest temp dir stuff
-    with open("tests/foo.json", "w") as file:
+def test_tokencounter_json_output(tmp_path):
+    output_path = tmp_path / "foo.json"
+    with open(output_path, "w") as file:
         cfg = config.Config(
             Path("tests/test_files"),
             True,
@@ -415,17 +407,16 @@ def test_tokencounter_json_output():
         tc.parse_files()
         tc.output()
     with open("tests/output.json", "r") as f:
-        with open("tests/foo.json", "r") as file:
+        with open(output_path, "r") as file:
             assert file.read().translate(
                 str.maketrans("", "", string.whitespace)
             ) == f.read().translate(str.maketrans("", "", string.whitespace))
-    os.remove(Path("tests/foo.json"))
 
 
 # TODO: fix for github action
-def test_tokencounter_html_output():
-    # TODO: replace with pytest temp dir stuff
-    with open("tests/foo.html", "w") as file:
+def test_tokencounter_html_output(tmp_path):
+    output_path = tmp_path / "foo.html"
+    with open(output_path, "w") as file:
         cfg = config.Config(
             Path("tests/test_files"),
             True,
@@ -444,11 +435,10 @@ def test_tokencounter_html_output():
         tc.parse_files()
         tc.output()
     with open("tests/output.html", "r") as f:
-        with open("tests/foo.html", "r") as file:
+        with open(output_path, "r") as file:
             assert file.read().translate(
                 str.maketrans("", "", string.whitespace)
             ) == f.read().translate(str.maketrans("", "", string.whitespace))
-    os.remove(Path("tests/foo.html"))
 
 
 """
