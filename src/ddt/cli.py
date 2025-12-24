@@ -96,7 +96,7 @@ def setup_argparse() -> argparse.ArgumentParser:
         "--json",
         action="store_true",
         help="save the results of the scan to a json file",
-        # deprecated=True,
+        deprecated=True,
     )
     _ = output_type_group.add_argument(
         "--html",
