@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 import string
 import sys
@@ -216,23 +215,24 @@ def test_tokencounter_add_to_ignored():
     assert file in tc.ignored_files[".md"]
 
 
-def test_tokencounter_filter_file():
-    cfg = config.Config(
-        Path("./tests/test_files"),
-        True,
-        False,
-        False,
-        False,
-        False,
-        False,
-        Model("gpt-4o"),
-        sys.stdout,
-        "txt",
-        [],
-        [],
-    )
+def test_tokencounter_filter_file(base_config, tmp_path):
+    # Create a test directory structure with .gitignore BEFORE creating Config
+    test_root = tmp_path / "test_root"
+    test_root.mkdir()
+
+    # Create .gitignore file with patterns
+    gitignore_path = test_root / ".gitignore"
+    gitignore_path.write_text("gitignored.json\n")
+
+    # Create the file that should be gitignored
+    gitignored = test_root / "gitignored.json"
+    gitignored.write_text('{"foo": "bar"}')
+
+    # Now create the config - it will parse .gitignore during __post_init__
+    cfg = base_config(root=test_root)
     tc = models.TokenCounter(cfg)
 
+    # Test inclusions filter
     inclusions = ["json"]
     tc.add_inclusions(inclusions)
     not_included = Path("output.json")
@@ -242,7 +242,7 @@ def test_tokencounter_filter_file():
     tc.included_files = set()
     tc.ignored_files = dict()
 
-    # TODO: figure out why this isn't getting flagged
+    # Test exclusions filter
     exclusions = ["html"]
     tc.add_exclusions(exclusions)
     excluded_file = Path("output.html")
@@ -252,26 +252,20 @@ def test_tokencounter_filter_file():
     tc.excluded_files = set()
     tc.ignored_files = dict()
 
-    # dotfiles
+    # Test dotfiles filter
     dotfile = Path(".gitignore")
     dotfile_filtered = tc.filter_file(dotfile)
     assert dotfile_filtered
     assert [dotfile] in tc.ignored_files.values()
     tc.ignored_files = dict()
 
-    # TODO: figure out why this isn't getting flagged
-    # gitignore
-    # TODO: replace with pytest temp dir stuff
-    with open("gitignored.json", "w") as file:
-        _ = file.write('{"foo": "bar"}')
-    gitignored = Path("gitignored.json")
+    # Test gitignore filter - the file was already created above
     gitignore_filtered = tc.filter_file(gitignored)
     assert gitignore_filtered
     assert tc.ignored_files[".json"] == [gitignored]
     tc.ignored_files = dict()
-    os.remove(gitignored)
 
-    # symlinks
+    # Test symlinks filter - README.md is outside test_root, so should be filtered
     symlinked = Path("README.md")
     symlink_filtered = tc.filter_file(symlinked)
     assert symlink_filtered
@@ -335,120 +329,106 @@ def test_tokencounter_parse_files():
     assert tc.total == 22
 
 
-def test_tokencounter_grab_suffix():
-    cfg = config.Config(
-        Path("assets"),
-        True,
-        False,
-        False,
-        False,
-        False,
-        False,
-        Model("gpt-4o"),
-        sys.stdout,
-        "txt",
-        [],
-        [],
-    )
+def test_tokencounter_grab_suffix(base_config, tmp_path):
+    cfg = base_config(root=Path("assets"))
     tc = models.TokenCounter(cfg)
     file = Path("README.md")
     suffix = tc.grab_suffix(file)
     assert suffix == ".md"
-    # TODO: replace with pytest temp dir stuff
-    with open("foobar.tar.gz", "w") as f:
-        _ = f.write("hello mom")
-    file = Path("foobar.tar.gz")
-    suffix = tc.grab_suffix(file)
+
+    # Test multi-extension suffix with temporary file
+    multi_ext_file = tmp_path / "foobar.tar.gz"
+    multi_ext_file.write_text("hello mom")
+    suffix = tc.grab_suffix(multi_ext_file)
     assert suffix == ".tar.gz"
-    os.remove(file)
 
 
-# TODO: fix for github action
-def test_tokencounter_txt_output():
-    # TODO: replace with pytest temp dir stuff
-    with open("tests/foo.txt", "w") as file:
-        cfg = config.Config(
-            Path("tests/test_files"),
-            True,
-            False,
-            False,
-            False,
-            False,
-            False,
-            Model("gpt-4o"),
-            file,
-            "txt",
-            [],
-            [],
+def test_tokencounter_txt_output(base_config, test_directory, tmp_path):
+    output_file = tmp_path / "foo.txt"
+
+    with output_file.open("w") as file:
+        cfg = base_config(
+            root=test_directory,
+            output=file,
+            output_format="txt",
         )
         tc = models.TokenCounter(cfg)
         tc.parse_files()
         tc.output()
-    with open("tests/output.txt", "r") as f:
-        with open("tests/foo.txt", "r") as file:
-            assert file.read().translate(
-                str.maketrans("", "", string.whitespace)
-            ) == f.read().translate(str.maketrans("", "", string.whitespace))
-    os.remove(Path("tests/foo.txt"))
+
+    # Verify output file was created and contains expected structure
+    actual = output_file.read_text()
+
+    # Check for key elements in the output
+    assert "ignored:" in actual
+    assert "totals:" in actual
+    assert ".txt tokens:" in actual
+    assert "testfile.txt: 22 tokens" in actual
+    assert ".txt total: 22 tokens" in actual
+    assert "grand total: 22" in actual
+    assert "remaining tokens given 128K context window: 127,978" in actual
 
 
-# TODO: fix for github action
 # This covers the TokenCounterEncoder too, technically - it only exists in output()
-def test_tokencounter_json_output():
-    # TODO: replace with pytest temp dir stuff
-    with open("tests/foo.json", "w") as file:
-        cfg = config.Config(
-            Path("tests/test_files"),
-            True,
-            False,
-            False,
-            False,
-            False,
-            False,
-            Model("gpt-4o"),
-            file,
-            "json",
-            [],
-            [],
+def test_tokencounter_json_output(base_config, test_directory, tmp_path):
+    import json
+
+    output_file = tmp_path / "foo.json"
+
+    with output_file.open("w") as file:
+        cfg = base_config(
+            root=test_directory,
+            output=file,
+            output_format="json",
         )
         tc = models.TokenCounter(cfg)
         tc.parse_files()
         tc.output()
-    with open("tests/output.json", "r") as f:
-        with open("tests/foo.json", "r") as file:
-            assert file.read().translate(
-                str.maketrans("", "", string.whitespace)
-            ) == f.read().translate(str.maketrans("", "", string.whitespace))
-    os.remove(Path("tests/foo.json"))
+
+    # Verify JSON structure
+    actual = json.loads(output_file.read_text())
+
+    # Check for key structure elements
+    assert "root" in actual
+    assert "all_files" in actual
+    assert "ignored_files" in actual
+    assert "scanned_files" in actual
+    assert "total" in actual
+
+    # Verify specific values
+    assert actual["total"] == 22
+    assert ".txt" in actual["scanned_files"]
+    assert actual["scanned_files"][".txt"]["total"] == 22
+    assert len(actual["scanned_files"][".txt"]["files"]) == 1
+    assert actual["scanned_files"][".txt"]["files"][0]["file"] == "testfile.txt"
+    assert actual["scanned_files"][".txt"]["files"][0]["tokens"] == 22
 
 
-# TODO: fix for github action
-def test_tokencounter_html_output():
-    # TODO: replace with pytest temp dir stuff
-    with open("tests/foo.html", "w") as file:
-        cfg = config.Config(
-            Path("tests/test_files"),
-            True,
-            False,
-            False,
-            False,
-            False,
-            False,
-            Model("gpt-4o"),
-            file,
-            "html",
-            [],
-            [],
+def test_tokencounter_html_output(base_config, test_directory, tmp_path):
+    output_file = tmp_path / "foo.html"
+
+    with output_file.open("w") as file:
+        cfg = base_config(
+            root=test_directory,
+            output=file,
+            output_format="html",
         )
         tc = models.TokenCounter(cfg)
         tc.parse_files()
         tc.output()
-    with open("tests/output.html", "r") as f:
-        with open("tests/foo.html", "r") as file:
-            assert file.read().translate(
-                str.maketrans("", "", string.whitespace)
-            ) == f.read().translate(str.maketrans("", "", string.whitespace))
-    os.remove(Path("tests/foo.html"))
+
+    # Verify HTML structure
+    actual = output_file.read_text()
+
+    # Check for key HTML elements
+    assert "<!DOCTYPE html>" in actual
+    assert "<html" in actual
+    assert "Scanned files in" in actual
+    assert "<table>" in actual
+    assert "</table>" in actual
+    assert '<th scope="row">Grand Total</th>' in actual
+    assert "testfile.txt" in actual
+    assert "<td>22</td>" in actual
 
 
 """
