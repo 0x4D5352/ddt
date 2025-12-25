@@ -1,5 +1,4 @@
 from pathlib import Path
-import string
 import sys
 from ddt import config, models
 from ddt.tokenizer import Model
