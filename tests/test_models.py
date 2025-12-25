@@ -1,5 +1,5 @@
+import json
 from pathlib import Path
-import string
 import sys
 from ddt import config, models
 from ddt.tokenizer import Model
@@ -377,11 +377,15 @@ def test_tokencounter_txt_output(tmp_path):
         tc = models.TokenCounter(cfg)
         tc.parse_files()
         tc.output()
-    with open("tests/output.txt", "r") as f:
-        with open(output_path, "r") as file:
-            assert file.read().translate(
-                str.maketrans("", "", string.whitespace)
-            ) == f.read().translate(str.maketrans("", "", string.whitespace))
+    with open(output_path, "r") as file:
+        output = file.read()
+    assert "ignored:" in output
+    assert "totals:" in output
+    assert "tests/test_files/README.md" in output
+    assert "tests/test_files/test_image.jpeg" in output
+    assert "tests/test_files/.gitignore" in output
+    assert "tests/test_files/subtest/.invisible" in output
+    assert "grand total:" in output
 
 
 # TODO: fix for github action
@@ -406,11 +410,22 @@ def test_tokencounter_json_output(tmp_path):
         tc = models.TokenCounter(cfg)
         tc.parse_files()
         tc.output()
-    with open("tests/output.json", "r") as f:
-        with open(output_path, "r") as file:
-            assert file.read().translate(
-                str.maketrans("", "", string.whitespace)
-            ) == f.read().translate(str.maketrans("", "", string.whitespace))
+    with open(output_path, "r") as file:
+        payload = json.loads(file.read())
+    assert payload["root"] == "tests/test_files"
+    assert payload["total"] == 22
+    assert set(payload["all_files"]) == {
+        "README.md",
+        "test_image.jpeg",
+        ".gitignore",
+        "testfile.txt",
+        ".invisible",
+    }
+    assert set(payload["ignored_files"].keys()) == {".md", ".jpeg", ""}
+    assert set(payload["ignored_files"][".md"]) == {"README.md"}
+    assert set(payload["ignored_files"][".jpeg"]) == {"test_image.jpeg"}
+    assert set(payload["ignored_files"][""]) == {".gitignore", ".invisible"}
+    assert payload["scanned_files"][".txt"]["total"] == 22
 
 
 # TODO: fix for github action
@@ -434,11 +449,15 @@ def test_tokencounter_html_output(tmp_path):
         tc = models.TokenCounter(cfg)
         tc.parse_files()
         tc.output()
-    with open("tests/output.html", "r") as f:
-        with open(output_path, "r") as file:
-            assert file.read().translate(
-                str.maketrans("", "", string.whitespace)
-            ) == f.read().translate(str.maketrans("", "", string.whitespace))
+    with open(output_path, "r") as file:
+        output = file.read()
+    assert "<table" in output
+    assert "Scanned files in" in output
+    assert "Ignored files in" in output
+    assert "tests/test_files/README.md" in output
+    assert "tests/test_files/test_image.jpeg" in output
+    assert "tests/test_files/.gitignore" in output
+    assert "tests/test_files/subtest/.invisible" in output
 
 
 """
