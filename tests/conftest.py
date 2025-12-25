@@ -1,6 +1,7 @@
 import shutil
 import sys
 from pathlib import Path
+from typing import TextIO
 import pytest
 from ddt import config
 from ddt.tokenizer import Model
@@ -44,22 +45,33 @@ def base_config():
             cfg = base_config(root=tmp_path, include_images=True)
     """
 
-    def _make_config(**overrides):
-        defaults = {
-            "root": Path("."),
-            "is_verbose": True,
-            "include_gitignore": False,
-            "include_dotfiles": False,
-            "include_symlinks": False,
-            "include_images": False,
-            "resolve_paths": False,
-            "model": Model("gpt-4o"),
-            "output": sys.stdout,
-            "output_format": "txt",
-            "exclude": [],
-            "include": [],
-        }
-        defaults.update(overrides)
-        return config.Config(**defaults)
+    def _make_config(
+        root: Path | None = None,
+        is_verbose: bool = True,
+        include_gitignore: bool = False,
+        include_dotfiles: bool = False,
+        include_symlinks: bool = False,
+        include_images: bool = False,
+        resolve_paths: bool = False,
+        model: Model | None = None,
+        output: TextIO | None = None,
+        output_format: str = "txt",
+        exclude: list[str] | None = None,
+        include: list[str] | None = None,
+    ) -> config.Config:
+        return config.Config(
+            root=root if root is not None else Path("."),
+            is_verbose=is_verbose,
+            include_gitignore=include_gitignore,
+            include_dotfiles=include_dotfiles,
+            include_symlinks=include_symlinks,
+            include_images=include_images,
+            resolve_paths=resolve_paths,
+            model=model if model is not None else Model("gpt-4o"),
+            output=output if output is not None else sys.stdout,
+            output_format=output_format,
+            exclude=exclude or [],
+            include=include or [],
+        )
 
     return _make_config
